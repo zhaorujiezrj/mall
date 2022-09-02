@@ -15,7 +15,6 @@ import org.springframework.context.annotation.ComponentScan;
 @SpringBootApplication
 @EnableFeignClients(basePackageClasses = {SysUserFeignClient.class, MemberFeignClient.class})
 @EnableDiscoveryClient
-@ComponentScan({"cn.zrj.mall.auth", "cn.zrj.mall.common"})
 public class AuthApplication {
 
     public static void main(String[] args) {

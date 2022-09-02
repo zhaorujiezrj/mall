@@ -69,23 +69,14 @@
         </dependency>
 
 
-
         <dependency>
             <groupId>cn.zrj.mall</groupId>
-            <artifactId>common</artifactId>
+            <artifactId>common-core</artifactId>
             <version>2022</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-starter-web</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>mysql</groupId>
-                    <artifactId>mysql-connector-java</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.baomidou</groupId>
-                    <artifactId>mybatis-plus-boot-starter</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

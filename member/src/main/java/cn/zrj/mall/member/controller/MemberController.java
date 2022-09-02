@@ -1,6 +1,6 @@
 package cn.zrj.mall.member.controller;
 
-import cn.zrj.mall.common.result.Result;
+import cn.zrj.mall.common.core.result.Result;
 import cn.zrj.mall.member.dto.MemberAuthDto;
 import cn.zrj.mall.member.dto.MemberDto;
 import cn.zrj.mall.member.service.UmsMemberService;

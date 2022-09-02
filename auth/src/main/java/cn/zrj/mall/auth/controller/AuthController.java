@@ -1,7 +1,7 @@
 package cn.zrj.mall.auth.controller;
 
 import cn.zrj.mall.auth.security.config.MyResourceServerTokenServices;
-import cn.zrj.mall.common.result.Result;
+import cn.zrj.mall.common.core.result.Result;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;

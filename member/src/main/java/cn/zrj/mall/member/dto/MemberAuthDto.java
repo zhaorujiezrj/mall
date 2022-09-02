@@ -6,8 +6,8 @@ import lombok.experimental.Accessors;
 /**
  * 会员认证传输层对象
  *
- * @author haoxr
- * @date 2022/2/12
+ * @author zhaorujie
+ * @date 2022/8/12
  */
 @Data
 @Accessors(chain = true)

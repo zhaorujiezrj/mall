@@ -1,7 +1,7 @@
 package cn.zrj.mall.auth.security.userdetails.member;
 
 import cn.zrj.mall.auth.dto.MemberAuthDto;
-import cn.zrj.mall.common.constant.GlobalConstants;
+import cn.zrj.mall.common.core.constant.GlobalConstants;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

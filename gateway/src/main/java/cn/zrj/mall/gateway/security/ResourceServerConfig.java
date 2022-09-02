@@ -3,14 +3,12 @@ package cn.zrj.mall.gateway.security;
 import cn.hutool.core.codec.Base64;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.io.IoUtil;
-import cn.zrj.mall.common.result.ResultCode;
+import cn.zrj.mall.common.core.result.ResultCode;
 import cn.zrj.mall.gateway.autoconfigure.SecurityProperties;
 import cn.zrj.mall.gateway.util.WebFluxUtils;
-import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -33,7 +31,6 @@ import java.io.InputStream;
 import java.security.KeyFactory;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.List;
 
 /**
  * @author zhaorujie
@@ -53,7 +50,6 @@ public class ResourceServerConfig {
         this.resourceServerManager = resourceServerManager;
         this.properties = properties;
     }
-
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {

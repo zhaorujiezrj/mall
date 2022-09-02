@@ -15,7 +15,6 @@ import org.springframework.context.annotation.ComponentScan;
 @EnableDiscoveryClient
 @EnableFeignClients
 @MapperScan("cn.zrj.mall.order.mapper")
-@ComponentScan("cn.zrj.mall")
 public class OrderApplication {
 
     public static void main(String[] args) {

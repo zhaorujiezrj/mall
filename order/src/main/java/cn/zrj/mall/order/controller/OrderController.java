@@ -1,6 +1,6 @@
 package cn.zrj.mall.order.controller;
 
-import cn.zrj.mall.common.result.Result;
+import cn.zrj.mall.common.core.result.Result;
 import cn.zrj.mall.order.service.OrderService;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;

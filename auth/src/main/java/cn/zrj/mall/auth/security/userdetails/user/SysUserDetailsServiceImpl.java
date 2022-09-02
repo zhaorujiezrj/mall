@@ -2,8 +2,8 @@ package cn.zrj.mall.auth.security.userdetails.user;
 
 import cn.zrj.mall.auth.dto.AuthUserDto;
 import cn.zrj.mall.auth.feign.SysUserFeignClient;
-import cn.zrj.mall.common.result.Result;
-import cn.zrj.mall.common.result.ResultCode;
+import cn.zrj.mall.common.core.result.Result;
+import cn.zrj.mall.common.core.result.ResultCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.DisabledException;

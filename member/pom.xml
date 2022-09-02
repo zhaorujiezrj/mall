@@ -19,7 +19,13 @@
     <dependencies>
         <dependency>
             <groupId>cn.zrj.mall</groupId>
-            <artifactId>common</artifactId>
+            <artifactId>common-core</artifactId>
+            <version>2022</version>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.zrj.mall</groupId>
+            <artifactId>common-mybatis</artifactId>
             <version>2022</version>
         </dependency>
 

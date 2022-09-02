@@ -1,6 +1,6 @@
 package cn.zrj.mall.gateway;
 
-import cn.zrj.mall.common.exception.GlobalExceptionHandler;
+import cn.zrj.mall.common.core.exception.GlobalExceptionHandler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;

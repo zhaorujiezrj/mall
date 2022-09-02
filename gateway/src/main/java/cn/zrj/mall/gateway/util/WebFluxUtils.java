@@ -1,8 +1,8 @@
 package cn.zrj.mall.gateway.util;
 
 import cn.hutool.json.JSONUtil;
-import cn.zrj.mall.common.result.Result;
-import cn.zrj.mall.common.result.ResultCode;
+import cn.zrj.mall.common.core.result.Result;
+import cn.zrj.mall.common.core.result.ResultCode;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpHeaders;

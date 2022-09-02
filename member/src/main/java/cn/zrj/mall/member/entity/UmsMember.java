@@ -9,8 +9,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
- * @author <a href="mailto:xianrui0365@163.com">haoxr</a>
- * @date 2022/2/12 16:15
+ * @author zhaorujie
+ * @date 2022/8/12 16:15
  */
 @Data
 public class UmsMember {

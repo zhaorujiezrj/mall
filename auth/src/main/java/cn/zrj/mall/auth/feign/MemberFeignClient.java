@@ -2,7 +2,7 @@ package cn.zrj.mall.auth.feign;
 
 import cn.zrj.mall.auth.dto.MemberAuthDto;
 import cn.zrj.mall.auth.dto.MemberDto;
-import cn.zrj.mall.common.result.Result;
+import cn.zrj.mall.common.core.result.Result;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 

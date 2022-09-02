@@ -1,8 +1,8 @@
 package cn.zrj.mall.gateway.filter;
 
-import cn.zrj.mall.common.constant.RedisConstants;
-import cn.zrj.mall.common.constant.SecurityConstants;
-import cn.zrj.mall.common.result.ResultCode;
+import cn.zrj.mall.common.core.constant.RedisConstants;
+import cn.zrj.mall.common.core.constant.SecurityConstants;
+import cn.zrj.mall.common.core.result.ResultCode;
 import cn.zrj.mall.gateway.autoconfigure.SecurityProperties;
 import cn.zrj.mall.gateway.util.WebFluxUtils;
 import lombok.extern.slf4j.Slf4j;
