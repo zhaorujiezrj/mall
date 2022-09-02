@@ -1,0 +1,5 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  cn.zrj.mall.common.config.RedisConfig,\
+  cn.zrj.mall.common.security.UserContextHolder,\
+  cn.zrj.mall.common.exception.GlobalExceptionHandler
+
