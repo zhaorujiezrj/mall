@@ -4,6 +4,7 @@ import cn.binarywang.wx.miniapp.api.WxMaService;
 import cn.binarywang.wx.miniapp.api.impl.WxMaServiceImpl;
 import cn.binarywang.wx.miniapp.config.WxMaConfig;
 import cn.binarywang.wx.miniapp.config.impl.WxMaDefaultConfigImpl;
+import cn.zrj.mall.auth.autoconfigure.WechatProperties;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,16 +15,18 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class WechatConfig {
-    @Value("${wechat.appId}")
-    private String appId;
-    @Value("${wechat.secret}")
-    private String secret;
+
+    private final WechatProperties properties;
+
+    public WechatConfig(WechatProperties properties) {
+        this.properties = properties;
+    }
 
     @Bean
     public WxMaConfig wxMaConfig() {
         WxMaDefaultConfigImpl config = new WxMaDefaultConfigImpl();
-        config.setAppid(appId);
-        config.setSecret(secret);
+        config.setAppid(properties.getAppId());
+        config.setSecret(properties.getSecret());
         return config;
     }
 

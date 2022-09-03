@@ -63,6 +63,11 @@
             <artifactId>common-mybatis</artifactId>
             <version>2022</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.github.binarywang</groupId>
+            <artifactId>weixin-java-pay</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

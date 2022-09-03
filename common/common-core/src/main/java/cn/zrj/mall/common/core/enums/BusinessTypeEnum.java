@@ -19,10 +19,10 @@ public enum BusinessTypeEnum {
         this.value = value;
     }
 
-    public String getNameByValue(String value) {
+    public static BusinessTypeEnum getValue(String value) {
         for (BusinessTypeEnum typeEnum : values()) {
             if (Objects.equals(typeEnum.value, value)) {
-                return typeEnum.name;
+                return typeEnum;
             }
         }
         return null;

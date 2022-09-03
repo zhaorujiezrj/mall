@@ -44,3 +44,18 @@ rocketmq:
     order-pay-tag: order-pay-tag
     order-refund-tag: order-refund-tag
 
+wx:
+  pay:
+    mchId:
+    mchKey:
+    subAppId:
+    subMchId:
+    keyPath:
+    privateKeyPath:
+    privateCertPath:
+    apiV3Key:
+    certSerialNo:
+    sandboxEnabled:
+    payNotifyUrl:
+    refundNotifyUrl:
+
