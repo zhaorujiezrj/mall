@@ -23,20 +23,30 @@ import cn.zrj.mall.order.util.RocketMQUtils;
 import cn.zrj.mall.order.vo.WxPayNotifyResponseVo;
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
+import com.alipay.api.domain.AlipayTradeFastpayRefundQueryModel;
+import com.alipay.api.domain.AlipayTradeQueryModel;
 import com.alipay.api.domain.AlipayTradeRefundModel;
 import com.alipay.api.domain.AlipayTradeWapPayModel;
 import com.alipay.api.internal.util.AlipaySignature;
+import com.alipay.api.request.AlipayTradeFastpayRefundQueryRequest;
 import com.alipay.api.request.AlipayTradePagePayRequest;
+import com.alipay.api.request.AlipayTradeQueryRequest;
 import com.alipay.api.request.AlipayTradeRefundRequest;
+import com.alipay.api.response.AlipayTradeFastpayRefundQueryResponse;
 import com.alipay.api.response.AlipayTradePagePayResponse;
+import com.alipay.api.response.AlipayTradeQueryResponse;
 import com.alipay.api.response.AlipayTradeRefundResponse;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.binarywang.wxpay.bean.notify.SignatureHeader;
 import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyV3Result;
 import com.github.binarywang.wxpay.bean.notify.WxPayRefundNotifyV3Result;
+import com.github.binarywang.wxpay.bean.request.WxPayOrderQueryV3Request;
+import com.github.binarywang.wxpay.bean.request.WxPayRefundQueryV3Request;
 import com.github.binarywang.wxpay.bean.request.WxPayRefundV3Request;
 import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderV3Request;
+import com.github.binarywang.wxpay.bean.result.WxPayOrderQueryV3Result;
+import com.github.binarywang.wxpay.bean.result.WxPayRefundQueryV3Result;
 import com.github.binarywang.wxpay.bean.result.WxPayRefundV3Result;
 import com.github.binarywang.wxpay.bean.result.enums.TradeTypeEnum;
 import com.github.binarywang.wxpay.constant.WxPayConstants;
@@ -103,18 +113,15 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public <T> T pay(String orderNo, Integer payType) {
+    public <T> T pay(String orderSn, Integer payType) {
         PayTypeEnum payTypeEnum = PayTypeEnum.getValue(payType);
         if (payTypeEnum == null) {
             throw new BusinessException("系统暂不支持该支付方式!");
         }
-        LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Order::getOrderSn, orderNo);
-        Order order = getOne(wrapper);
-        Assert.isTrue(order != null, "订单不存在！");
+        Order order = getOrderByOrderSn(orderSn);
         Assert.isTrue(Objects.equals(OrderStatusEnum.PENDING_PAYMENT.getCode(), order.getStatus()), "订单不可支付，请刷新查看订单状态");
 
-        RLock lock = redissonClient.getLock(RedisConstants.ORDER_SN_PREFIX + orderNo);
+        RLock lock = redissonClient.getLock(RedisConstants.ORDER_SN_PREFIX + orderSn);
         try {
             lock.lock();
             T result = this.pay(order, payTypeEnum);
@@ -378,9 +385,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     @Override
     public <T> T refund(String orderSn, Integer status) {
-        LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Order::getOrderSn, orderSn);
-        Order order = Optional.ofNullable(this.getOne(wrapper)).orElseThrow(() -> new BusinessException("订单不存在！"));
+        Order order = getOrderByOrderSn(orderSn);
         Assert.isTrue(!Objects.equals(order.getStatus(), OrderStatusEnum.PENDING_PAYMENT.getCode()), "该订单未支付，无需退款！");
         Assert.isTrue(!Objects.equals(order.getStatus(), OrderStatusEnum.REFUNDED.getCode()), "该订单已退款！");
         // 如何用户的信誉积分很高就直接退款，否则就需要管理员审核后才能退款
@@ -395,6 +400,104 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             }
         } else {
             return payRefund(order);
+        }
+    }
+
+    @Override
+    public <T> T payQuery(String orderSn) {
+        Order order = getOrderByOrderSn(orderSn);
+        Assert.isTrue(StringUtils.isNotBlank(order.getOutTradeNo()), "该订单不存在商户单号！");
+        T result = null;
+        switch (Objects.requireNonNull(PayTypeEnum.getValue(order.getPayType()))) {
+            case WX_APP:
+            case WX_JSAPI:
+            case WX_NATIVE:
+            case WX_H5:
+                result = (T) this.wxPayQuery(order.getOutTradeNo());
+                break;
+            case ALIPAY:
+                result = (T) this.alipayQuery(order.getOutTradeNo());
+                break;
+            case BALANCE:
+                break;
+            default:
+                throw new BusinessException("暂不支持改类型！");
+        }
+        return result;
+    }
+
+    @Override
+    public <T> T refundQuery(String orderSn) {
+        Order order = getOrderByOrderSn(orderSn);
+        Assert.isTrue(StringUtils.isNotBlank(order.getOutTradeNo()), "该订单不存在商户单号！");
+        Assert.isTrue(StringUtils.isNotBlank(order.getOutRefundNo()), "该订单不存在商户退款单号单号！");
+        T result = null;
+        switch (Objects.requireNonNull(PayTypeEnum.getValue(order.getPayType()))) {
+            case WX_APP:
+            case WX_JSAPI:
+            case WX_NATIVE:
+            case WX_H5:
+                result = (T) this.wxPayRefundQuery(order.getOutRefundNo());
+                break;
+            case ALIPAY:
+                result = (T) this.alipayRefundQuery(order.getOutTradeNo(), order.getOutRefundNo());
+                break;
+            case BALANCE:
+                break;
+            default:
+                throw new BusinessException("暂不支持改类型！");
+        }
+        return result;
+    }
+
+    private Order getOrderByOrderSn(String orderSn) {
+        LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Order::getOrderSn, orderSn);
+        return Optional.ofNullable(this.getOne(wrapper)).orElseThrow(() -> new BusinessException("订单不存在！"));
+    }
+
+    private WxPayOrderQueryV3Result wxPayQuery(String outTradeNo) {
+        try {
+            return wxPayService.queryOrderV3(new WxPayOrderQueryV3Request().setOutTradeNo(outTradeNo));
+        } catch (WxPayException e) {
+            log.error("微信订单查询发生异常，[商户单号：{}]", outTradeNo, e);
+            throw new BusinessException("微信订单查询发生异常");
+        }
+    }
+
+    private AlipayTradeQueryResponse alipayQuery(String outTradeNo) {
+        AlipayTradeQueryRequest request = new AlipayTradeQueryRequest();
+        AlipayTradeQueryModel model = new AlipayTradeQueryModel();
+        model.setOutTradeNo(outTradeNo);
+        request.setBizModel(model);
+        try {
+            return alipayClient.execute(request);
+        } catch (AlipayApiException e) {
+            log.error("支付宝订单查询发生异常，[商户单号：{}]", outTradeNo, e);
+            throw new BusinessException("支付宝订单查询发生异常");
+        }
+    }
+
+    private WxPayRefundQueryV3Result wxPayRefundQuery(String outRefundNo) {
+        try {
+            return wxPayService.refundQueryV3(outRefundNo);
+        } catch (WxPayException e) {
+            log.error("微信订单查询发生异常，[商户退款单号：{}]", outRefundNo, e);
+            throw new BusinessException("微信订单查询发生异常");
+        }
+    }
+
+    private AlipayTradeFastpayRefundQueryResponse alipayRefundQuery(String outTradeNo, String outRefundNo) {
+        AlipayTradeFastpayRefundQueryRequest request = new AlipayTradeFastpayRefundQueryRequest();
+        AlipayTradeFastpayRefundQueryModel model = new AlipayTradeFastpayRefundQueryModel();
+        model.setOutTradeNo(outTradeNo);
+        model.setOutRequestNo(outRefundNo);
+        request.setBizModel(model);
+        try {
+            return alipayClient.execute(request);
+        } catch (AlipayApiException e) {
+            log.error("支付宝订单查询发生异常，[商户退款单号：{}]", outRefundNo, e);
+            throw new BusinessException("支付宝订单查询发生异常");
         }
     }
 

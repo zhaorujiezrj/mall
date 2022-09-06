@@ -23,12 +23,12 @@ public interface OrderService extends IService<Order> {
 
     /**
      * 订单支付
-     * @param orderNo 订单编号
+     * @param orderSn 订单编号
      * @param payType 支付类型
      * @param <T>
      * @return
      */
-    <T> T pay(String orderNo, Integer payType);
+    <T> T pay(String orderSn, Integer payType);
 
     /**
      * 订单支付
@@ -87,4 +87,20 @@ public interface OrderService extends IService<Order> {
      * @return
      */
     <T> T refund(String orderSn, Integer status);
+
+    /**
+     * 支付查询
+     * @param orderSn
+     * @param <T>
+     * @return
+     */
+    <T> T payQuery(String orderSn);
+
+    /**
+     * 退款查询
+     * @param orderSn
+     * @param <T>
+     * @return
+     */
+    <T> T refundQuery(String orderSn);
 }

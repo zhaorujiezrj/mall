@@ -31,8 +31,8 @@ public class OrderController {
 
     @ApiOperation("订单支付")
     @PostMapping("/pay")
-    public <T> Result<T> pay(String orderNo, Integer payType) {
-       return Result.success(orderService.pay(orderNo, payType));
+    public <T> Result<T> pay(String orderSn, Integer payType) {
+       return Result.success(orderService.pay(orderSn, payType));
     }
 
     @ApiOperation("订单退款")
