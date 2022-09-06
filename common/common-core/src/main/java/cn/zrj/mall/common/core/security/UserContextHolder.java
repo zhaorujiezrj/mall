@@ -34,6 +34,11 @@ public class UserContextHolder {
     }
 
     public static JSONObject getUserInfo() {
+        String payload = getPayload(getToken());
+        return JSONUtil.parseObj(payload);
+    }
+
+    public static String getToken() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (Objects.isNull(attributes)) {
             throw new BusinessException("请登录!");
@@ -44,8 +49,7 @@ public class UserContextHolder {
             throw new BusinessException("请登录!");
         }
         token = token.replaceAll("^[Bb]earer\\s+", "");
-        String payload = getPayload(token);
-        return JSONUtil.parseObj(payload);
+        return token;
     }
 
     @SneakyThrows
@@ -56,6 +60,11 @@ public class UserContextHolder {
     public static PayloadToken getPayloadToken(String token) {
         return JSONUtil.toBean(getPayload(token), PayloadToken.class);
     }
+
+    public static PayloadToken getPayloadToken() {
+        return JSONUtil.toBean(getPayload(getToken()), PayloadToken.class);
+    }
+
 
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)

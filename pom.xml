@@ -40,6 +40,8 @@
         <weixin-java.version>4.1.5.B</weixin-java.version>
         <nimbus-jose-jwt.version>9.16.1</nimbus-jose-jwt.version>
         <rocketmq.version>2.2.2</rocketmq.version>
+        <redisson.version>3.17.5</redisson.version>
+        <alipay.version>4.33.26.ALL</alipay.version>
     </properties>
 
     <dependencies>
@@ -160,6 +162,20 @@
                 <groupId>org.apache.rocketmq</groupId>
                 <artifactId>rocketmq-spring-boot-starter</artifactId>
                 <version>${rocketmq.version}</version>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/org.redisson/redisson-spring-boot-starter -->
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson-spring-boot-starter</artifactId>
+                <version>${redisson.version}</version>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/com.alipay.sdk/alipay-sdk-java -->
+            <dependency>
+                <groupId>com.alipay.sdk</groupId>
+                <artifactId>alipay-sdk-java</artifactId>
+                <version>${alipay.version}</version>
             </dependency>
 
 

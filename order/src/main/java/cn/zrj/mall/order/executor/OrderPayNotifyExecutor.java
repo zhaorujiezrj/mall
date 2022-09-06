@@ -1,5 +1,6 @@
 package cn.zrj.mall.order.executor;
 
+import cn.hutool.core.date.DateUtil;
 import cn.zrj.mall.common.core.exception.BusinessException;
 import cn.zrj.mall.order.autoconfigure.RocketMQConsumerProperties;
 import cn.zrj.mall.order.dto.WxPayNotifyRequestDto;
@@ -48,7 +49,7 @@ public class OrderPayNotifyExecutor implements OrderMessageExecutor {
     public ConsumeConcurrentlyStatus executor(String content) throws JsonProcessingException {
         log.info("开始处理支付结果通知");
         WxPayNotifyRequestDto request = objectMapper.readValue(content, WxPayNotifyRequestDto.class);
-        WxPayOrderNotifyV3Result.DecryptNotifyResult result = null;
+        WxPayOrderNotifyV3Result.DecryptNotifyResult result;
         try {
             result = wxPayService.parseOrderNotifyV3Result(request.getNotifyData(), request.getSignatureHeader()).getResult();
         } catch (WxPayException e) {
@@ -70,9 +71,9 @@ public class OrderPayNotifyExecutor implements OrderMessageExecutor {
         if (Objects.equals(result.getTradeState(), WxPayConstants.WxpayTradeStatus.SUCCESS)) {
             order.setStatus(OrderStatusEnum.PAYED.getCode());
             order.setTransactionId(result.getTransactionId());
-            order.setPayTime(new Date());
+            order.setPayTime(DateUtil.parseDateTime(result.getSuccessTime()));
             orderService.updateById(order);
-            log.info("微信支付成功，【单号：{}】", result.getOutTradeNo());
+            log.info("微信支付成功，【商户单号：{}】", result.getOutTradeNo());
         }
         return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
     }

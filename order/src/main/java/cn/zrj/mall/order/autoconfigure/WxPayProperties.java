@@ -60,4 +60,8 @@ public class WxPayProperties {
      * 退款通知url
      */
     private String refundNotifyUrl;
+    /**
+     * 小程序appid
+     */
+    private String appid;
 }

@@ -43,7 +43,7 @@ public class OrderRefundNotifyExecutor implements OrderMessageExecutor{
     public ConsumeConcurrentlyStatus executor(String content) throws JsonProcessingException {
         log.info("开始处理退款结果通知");
         WxPayNotifyRequestDto request = objectMapper.readValue(content, WxPayNotifyRequestDto.class);
-        WxPayRefundNotifyV3Result.DecryptNotifyResult result = null;
+        WxPayRefundNotifyV3Result.DecryptNotifyResult result;
         try {
             result = wxPayService.parseRefundNotifyV3Result(request.getNotifyData(), request.getSignatureHeader()).getResult();
         } catch (WxPayException e) {

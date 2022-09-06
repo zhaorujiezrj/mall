@@ -13,4 +13,6 @@ public interface RedisConstants {
     String BUSINESS = "business:";
 
     String BUSINESS_NO = BUSINESS + "no:";
+
+    String ORDER_SN_PREFIX = "order:sn:";
 }

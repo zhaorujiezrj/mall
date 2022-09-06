@@ -2,6 +2,7 @@ package cn.zrj.mall.order.controller;
 
 import cn.zrj.mall.order.autoconfigure.RocketMQProducerProperties;
 import cn.zrj.mall.order.dto.WxPayNotifyRequestDto;
+import cn.zrj.mall.order.service.OrderService;
 import cn.zrj.mall.order.util.RocketMQUtils;
 import cn.zrj.mall.order.vo.WxPayNotifyResponseVo;
 import com.github.binarywang.wxpay.bean.notify.SignatureHeader;
@@ -13,6 +14,7 @@ import org.apache.rocketmq.client.producer.SendStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * @author zhaorujie
@@ -26,6 +28,8 @@ public class WxPayCallbackController {
 
     @Autowired
     private RocketMQProducerProperties properties;
+    @Autowired
+    private OrderService orderService;
 
     /**
      * 微信下单支付结果回调
@@ -34,10 +38,11 @@ public class WxPayCallbackController {
      * @param headers    请求头
      * @return {"code": "SUCCESS", "message": "成功"}
      */
+    @ApiIgnore
     @PostMapping("order/pay/notify/v3")
-    public WxPayNotifyResponseVo wxPayNotifyCallback(@RequestBody String notifyData,
-                                                     @RequestHeader HttpHeaders headers) throws Exception {
-        return wxPayNotifyResponse(notifyData, headers, properties.getTopic(), properties.getOrderPayTag());
+    public WxPayNotifyResponseVo wxPayCallbackNotify(@RequestBody String notifyData,
+                                                     @RequestHeader HttpHeaders headers) {
+        return orderService.wxPayCallbackNotify(notifyData, this.getSignatureHeader(headers));
     }
 
     /**
@@ -47,8 +52,38 @@ public class WxPayCallbackController {
      * @param headers    请求头
      * @return {"code": "SUCCESS", "message": "成功"}
      */
+    @ApiIgnore
     @PostMapping("order/refund/notify/v3")
-    public WxPayNotifyResponseVo wxRefundNotifyCallback(@RequestBody String notifyData,
+    public WxPayNotifyResponseVo wxRefundCallbackNotify(@RequestBody String notifyData,
+                                                          @RequestHeader HttpHeaders headers) {
+        return orderService.wxRefundCallbackNotify(notifyData, this.getSignatureHeader(headers));
+    }
+
+
+    /**
+     * 微信下单支付结果回调,MQ处理
+     *
+     * @param notifyData 加密数据
+     * @param headers    请求头
+     * @return {"code": "SUCCESS", "message": "成功"}
+     */
+    @ApiIgnore
+    @PostMapping("order/pay/notify/v3/mq")
+    public WxPayNotifyResponseVo wxPayNotifyCallbackMQ(@RequestBody String notifyData,
+                                                     @RequestHeader HttpHeaders headers) throws Exception {
+        return wxPayNotifyResponse(notifyData, headers, properties.getTopic(), properties.getOrderPayTag());
+    }
+
+    /**
+     * 微信退款结果回调,MQ处理
+     *
+     * @param notifyData 加密数据
+     * @param headers    请求头
+     * @return {"code": "SUCCESS", "message": "成功"}
+     */
+    @ApiIgnore
+    @PostMapping("order/refund/notify/v3/mq")
+    public WxPayNotifyResponseVo wxRefundNotifyCallbackMQ(@RequestBody String notifyData,
                                                         @RequestHeader HttpHeaders headers) throws Exception {
         return wxPayNotifyResponse(notifyData, headers, properties.getTopic(), properties.getOrderRefundTag());
     }

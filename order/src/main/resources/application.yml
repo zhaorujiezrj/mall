@@ -61,3 +61,20 @@ wx:
     payNotifyUrl:
     refundNotifyUrl:
 
+ali:
+  pay:
+    appId:
+    privateKey:
+    alipayPublicKey:
+    notifyUrl:
+    returnUrl:
+    signType:
+    timeout:
+    gatewayUrl:
+
+redisson:
+  address: redis://127.0.0.1:6379
+  password:
+  database: 1
+  min-idle: 2
+

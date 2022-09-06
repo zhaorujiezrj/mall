@@ -1,14 +1,18 @@
 package cn.zrj.mall.member.controller;
 
+import cn.zrj.mall.common.core.exception.BusinessException;
 import cn.zrj.mall.common.core.result.Result;
 import cn.zrj.mall.member.dto.MemberAuthDto;
 import cn.zrj.mall.member.dto.MemberDto;
+import cn.zrj.mall.member.entity.UmsMember;
 import cn.zrj.mall.member.service.UmsMemberService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 /**
  * @author zhaorujie
@@ -51,5 +55,11 @@ public class MemberController {
     public Result<Void> updateMember(@RequestBody MemberDto memberDto) {
         memberService.updateMember(memberDto);
         return Result.success();
+    }
+
+    @GetMapping("id/{id}")
+    public Result<String> getOpenidById(@PathVariable Long id) {
+        UmsMember member = Optional.ofNullable(memberService.getById(id)).orElseThrow(() -> new BusinessException("用户不存在！"));
+        return Result.success(member.getOpenid());
     }
 }
