@@ -5,7 +5,6 @@ import cn.zrj.mall.order.dto.WxPayNotifyRequestDto;
 import cn.zrj.mall.order.service.OrderService;
 import cn.zrj.mall.order.util.RocketMQUtils;
 import cn.zrj.mall.order.vo.WxPayNotifyResponseVo;
-import com.github.binarywang.wxpay.bean.notify.SignatureHeader;
 import com.github.binarywang.wxpay.constant.WxPayConstants;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +41,16 @@ public class WxPayCallbackController {
     @PostMapping("order/pay/notify/v3")
     public WxPayNotifyResponseVo wxPayCallbackNotify(@RequestBody String notifyData,
                                                      @RequestHeader HttpHeaders headers) {
-        return orderService.wxPayCallbackNotify(notifyData, this.getSignatureHeader(headers));
+        try {
+            orderService.wxPayCallbackNotify(notifyData, headers);
+            return new WxPayNotifyResponseVo()
+                    .setCode(WxPayConstants.ResultCode.SUCCESS)
+                    .setMessage("成功");
+        } catch (Exception e) {
+            return new WxPayNotifyResponseVo()
+                    .setCode(WxPayConstants.ResultCode.FAIL)
+                    .setMessage("失败");
+        }
     }
 
     /**
@@ -56,7 +64,16 @@ public class WxPayCallbackController {
     @PostMapping("order/refund/notify/v3")
     public WxPayNotifyResponseVo wxRefundCallbackNotify(@RequestBody String notifyData,
                                                           @RequestHeader HttpHeaders headers) {
-        return orderService.wxRefundCallbackNotify(notifyData, this.getSignatureHeader(headers));
+        try {
+            orderService.wxRefundCallbackNotify(notifyData, headers);
+            return new WxPayNotifyResponseVo()
+                    .setCode(WxPayConstants.ResultCode.SUCCESS)
+                    .setMessage("成功");
+        }catch (Exception e) {
+            return new WxPayNotifyResponseVo()
+                    .setCode(WxPayConstants.ResultCode.FAIL)
+                    .setMessage("失败");
+        }
     }
 
 
@@ -91,7 +108,7 @@ public class WxPayCallbackController {
     private WxPayNotifyResponseVo wxPayNotifyResponse(String notifyData, HttpHeaders headers, String topics, String tags) throws Exception {
         WxPayNotifyRequestDto requestDto = new WxPayNotifyRequestDto();
         requestDto.setNotifyData(notifyData);
-        requestDto.setSignatureHeader(this.getSignatureHeader(headers));
+        requestDto.setHeaders(headers);
         //发送MQ消息进行处理，防止回调过程网络出现波动导致失败
         SendResult result = RocketMQUtils.send(topics, tags, requestDto);
         if (result != null && result.getSendStatus() == SendStatus.SEND_OK) {
@@ -104,12 +121,4 @@ public class WxPayCallbackController {
                 .setMessage("失败");
     }
 
-    private SignatureHeader getSignatureHeader(HttpHeaders headers) {
-        SignatureHeader signatureHeader = new SignatureHeader();
-        signatureHeader.setSignature(headers.getFirst("Wechatpay-Signature"));
-        signatureHeader.setNonce(headers.getFirst("Wechatpay-Nonce"));
-        signatureHeader.setSerial(headers.getFirst("Wechatpay-Serial"));
-        signatureHeader.setTimeStamp(headers.getFirst("Wechatpay-Timestamp"));
-        return signatureHeader;
-    }
 }

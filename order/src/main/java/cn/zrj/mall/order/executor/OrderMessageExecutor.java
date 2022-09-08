@@ -1,7 +1,6 @@
 package cn.zrj.mall.order.executor;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import org.apache.rocketmq.common.message.MessageExt;
 
 /**
@@ -21,5 +20,5 @@ public interface OrderMessageExecutor{
      * @param content
      * @return
      */
-    ConsumeConcurrentlyStatus executor(String content) throws JsonProcessingException;
+    void executor(String content) throws JsonProcessingException;
 }

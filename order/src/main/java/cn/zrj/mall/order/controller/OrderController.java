@@ -37,7 +37,8 @@ public class OrderController {
 
     @ApiOperation("订单退款")
     @PostMapping("refund")
-    public <T> Result<T> refund(@ApiParam("订单编码") String orderNo, @ApiParam("状态 0=申请退款 1=同意") Integer status) {
-        return Result.success(orderService.refund(orderNo, status));
+    public Result<Void> refund(@ApiParam("订单编码") String orderNo, @ApiParam("状态 0=申请退款 1=同意") Integer status) {
+        orderService.refund(orderNo, status);
+        return Result.success();
     }
 }

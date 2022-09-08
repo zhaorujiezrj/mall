@@ -1,6 +1,5 @@
 package cn.zrj.mall.order.listener;
 
-import cn.zrj.mall.common.core.exception.BusinessException;
 import cn.zrj.mall.order.executor.OrderMessageExecutor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -55,7 +54,8 @@ public class OrderMessageListener implements MessageListenerConcurrently{
 
             for (OrderMessageExecutor executor : executors) {
                 if (executor.check(messageExt)) {
-                    return executor.executor(content);
+                    executor.executor(content);
+                    return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
                 }
             }
             log.error("未找到匹配的tags！");
