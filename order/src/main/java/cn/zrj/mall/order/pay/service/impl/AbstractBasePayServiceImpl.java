@@ -2,7 +2,8 @@ package cn.zrj.mall.order.pay.service.impl;
 
 import cn.zrj.mall.order.pay.enums.PayTypeEnum;
 import cn.zrj.mall.order.pay.service.BasePayService;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 
 import javax.servlet.http.HttpServletRequest;
@@ -11,8 +12,9 @@ import javax.servlet.http.HttpServletRequest;
  * @author zhaorujie
  * @date 2022/9/7
  */
-@Slf4j
 public abstract class AbstractBasePayServiceImpl implements BasePayService {
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Override
     public <T> T doPay(String oldOutTradeNo, String outTradeNo, Long payAmount, String description, String openid, PayTypeEnum payTypeEnum) {

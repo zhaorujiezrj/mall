@@ -1,7 +1,7 @@
 package cn.zrj.mall.order.pay.service.impl;
 
 import cn.zrj.mall.common.core.exception.BusinessException;
-import cn.zrj.mall.order.autoconfigure.WxPayProperties;
+import cn.zrj.mall.order.pay.config.WxPayProperties;
 import cn.zrj.mall.order.pay.constant.BeanNameConstants;
 import cn.zrj.mall.order.pay.enums.PayTypeEnum;
 import com.github.binarywang.wxpay.bean.notify.SignatureHeader;
@@ -16,8 +16,9 @@ import com.github.binarywang.wxpay.bean.result.enums.TradeTypeEnum;
 import com.github.binarywang.wxpay.constant.WxPayConstants;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -26,14 +27,14 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.EnumMap;
 import java.util.Objects;
 
-
 /**
  * @author zhaorujie
  * @date 2022/9/7
  */
-@Slf4j
 @Service(BeanNameConstants.WX)
 public class WxPayServiceImpl extends AbstractBasePayServiceImpl {
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final WxPayService wxPayService;
 

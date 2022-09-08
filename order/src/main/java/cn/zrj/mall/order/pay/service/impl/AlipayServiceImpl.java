@@ -1,18 +1,20 @@
 package cn.zrj.mall.order.pay.service.impl;
 
 import cn.zrj.mall.common.core.exception.BusinessException;
-import cn.zrj.mall.order.autoconfigure.AlipayProperties;
+import cn.zrj.mall.order.pay.config.AlipayProperties;
 import cn.zrj.mall.order.pay.constant.BeanNameConstants;
 import cn.zrj.mall.order.pay.enums.AliTradeTypeEnum;
 import cn.zrj.mall.order.pay.enums.PayTypeEnum;
+import cn.zrj.mall.order.pay.result.AlipayNotifyResponse;
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
 import com.alipay.api.domain.*;
 import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.api.request.*;
 import com.alipay.api.response.*;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -30,8 +32,9 @@ import java.util.Objects;
  * @date 2022/9/7
  */
 @Service(BeanNameConstants.ALI)
-@Slf4j
 public class AlipayServiceImpl extends AbstractBasePayServiceImpl {
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final AlipayClient alipayClient;
 
@@ -131,7 +134,7 @@ public class AlipayServiceImpl extends AbstractBasePayServiceImpl {
 
         try {
             AlipayTradeCloseResponse response = alipayClient.execute(request);
-            log.debug("支付宝关闭订单响应：{}",response.toString());
+            log.debug("支付宝关闭订单响应：{}",response);
         } catch (AlipayApiException e) {
             log.error("支付宝关闭订单异常，商户单号：{}", outTradeNo, e);
             throw new BusinessException("支付宝关闭订单异常");
@@ -159,7 +162,7 @@ public class AlipayServiceImpl extends AbstractBasePayServiceImpl {
 
         try {
             AlipayTradeRefundResponse response = alipayClient.execute(refundRequest);
-            log.debug("支付宝退款响应：{}", response.toString());
+            log.debug("支付宝退款响应：{}", response);
         } catch (AlipayApiException e) {
             log.error("支付宝退款发生异常，[商户单号：{}]", outTradeNo, e);
             throw new BusinessException("支付宝退款发生异常");

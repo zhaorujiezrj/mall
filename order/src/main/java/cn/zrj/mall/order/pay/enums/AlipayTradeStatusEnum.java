@@ -1,4 +1,4 @@
-package cn.zrj.mall.order.enums;
+package cn.zrj.mall.order.pay.enums;
 
 /**
  * @author zhaorujie

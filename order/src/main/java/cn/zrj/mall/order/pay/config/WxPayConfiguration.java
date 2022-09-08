@@ -1,14 +1,13 @@
-package cn.zrj.mall.order.config;
+package cn.zrj.mall.order.pay.config;
 
-import cn.zrj.mall.order.autoconfigure.WxPayProperties;
 import com.github.binarywang.wxpay.config.WxPayConfig;
 import com.github.binarywang.wxpay.service.WxPayService;
 import com.github.binarywang.wxpay.service.impl.WxPayServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,9 +16,10 @@ import org.springframework.context.annotation.Configuration;
  * @author zhaorujie
  * @date 2022/9/2
  */
+@Slf4j
 @Configuration
 @ConditionalOnClass(WxPayService.class)
-@Slf4j
+@EnableConfigurationProperties(WxPayProperties.class)
 public class WxPayConfiguration {
 
     private final WxPayProperties properties;
@@ -29,6 +29,7 @@ public class WxPayConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean
     public WxPayService wxPayService() {
         if (StringUtils.isBlank(properties.getMchId())) {
             log.error("微信商户号配置无效!");

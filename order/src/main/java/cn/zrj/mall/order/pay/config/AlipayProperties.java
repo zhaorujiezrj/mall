@@ -1,16 +1,16 @@
-package cn.zrj.mall.order.autoconfigure;
+package cn.zrj.mall.order.pay.config;
 
-import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 /**
  * @author zhaorujie
  * @date 2022/9/5
  */
 @ConfigurationProperties(prefix = "ali.pay")
-@Data
 @Configuration
+@Primary
 public class AlipayProperties {
     /**
      * 应用id，你的AppId，收款账号既是你的APPID对应支付宝账号
@@ -50,4 +50,76 @@ public class AlipayProperties {
      * 支付宝网关； https://openapi.alipaydev.com/gateway.do
      */
     private String gatewayUrl;
+
+    public String getAppId() {
+        return appId;
+    }
+
+    public void setAppId(String appId) {
+        this.appId = appId;
+    }
+
+    public String getPrivateKey() {
+        return privateKey;
+    }
+
+    public void setPrivateKey(String privateKey) {
+        this.privateKey = privateKey;
+    }
+
+    public String getAlipayPublicKey() {
+        return alipayPublicKey;
+    }
+
+    public void setAlipayPublicKey(String alipayPublicKey) {
+        this.alipayPublicKey = alipayPublicKey;
+    }
+
+    public String getNotifyUrl() {
+        return notifyUrl;
+    }
+
+    public void setNotifyUrl(String notifyUrl) {
+        this.notifyUrl = notifyUrl;
+    }
+
+    public String getReturnUrl() {
+        return returnUrl;
+    }
+
+    public void setReturnUrl(String returnUrl) {
+        this.returnUrl = returnUrl;
+    }
+
+    public String getSignType() {
+        return signType;
+    }
+
+    public void setSignType(String signType) {
+        this.signType = signType;
+    }
+
+    public String getCharset() {
+        return charset;
+    }
+
+    public void setCharset(String charset) {
+        this.charset = charset;
+    }
+
+    public String getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(String timeout) {
+        this.timeout = timeout;
+    }
+
+    public String getGatewayUrl() {
+        return gatewayUrl;
+    }
+
+    public void setGatewayUrl(String gatewayUrl) {
+        this.gatewayUrl = gatewayUrl;
+    }
 }
