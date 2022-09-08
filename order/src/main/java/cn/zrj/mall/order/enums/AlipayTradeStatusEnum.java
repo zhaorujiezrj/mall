@@ -4,7 +4,7 @@ package cn.zrj.mall.order.enums;
  * @author zhaorujie
  * @date 2022/9/5
  */
-public enum AlipayStatusEnum {
+public enum AlipayTradeStatusEnum {
     TRADE_CLOSED("交易关闭","TRADE_CLOSED"),
     TRADE_FINISHED("交易完结","TRADE_FINISHED"),
     TRADE_SUCCESS("支付成功","TRADE_SUCCESS"),
@@ -15,7 +15,7 @@ public enum AlipayStatusEnum {
 
     private final String value;
 
-    AlipayStatusEnum(String name, String value) {
+    AlipayTradeStatusEnum(String name, String value) {
         this.name = name;
         this.value = value;
     }
