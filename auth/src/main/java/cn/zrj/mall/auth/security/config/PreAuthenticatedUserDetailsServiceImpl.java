@@ -6,12 +6,10 @@ import cn.zrj.mall.auth.security.userdetails.member.MemberUserDetailsServiceImpl
 import cn.zrj.mall.auth.security.userdetails.user.SysUserDetailsServiceImpl;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.util.Assert;
 
 /**
  * @author zhaorujie
@@ -19,7 +17,7 @@ import org.springframework.util.Assert;
  */
 @Data
 @Slf4j
-public class PreAuthenticatedUserDetailsService<T extends Authentication> implements AuthenticationUserDetailsService<T> {
+public class PreAuthenticatedUserDetailsServiceImpl<T extends Authentication> implements AuthenticationUserDetailsService<T> {
 
     private SysUserDetailsServiceImpl sysUserDetailsService;
 

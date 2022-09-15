@@ -8,9 +8,9 @@ import cn.zrj.mall.common.core.security.UserContextHolder;
 import cn.zrj.mall.common.core.util.BusinessNoUtils;
 import cn.zrj.mall.order.autoconfigure.RocketMQProducerProperties;
 import cn.zrj.mall.order.entity.Order;
-import cn.zrj.mall.order.enums.AlipayTradeStatusEnum;
+import cn.zrj.mall.order.pay.enums.AlipayTradeStatusEnum;
 import cn.zrj.mall.order.enums.OrderStatusEnum;
-import cn.zrj.mall.order.pay.service.impl.AlipayNotifyResponse;
+import cn.zrj.mall.order.pay.result.AlipayNotifyResponse;
 import cn.zrj.mall.order.pay.enums.PayTypeEnum;
 import cn.zrj.mall.order.feign.MemberFeignClient;
 import cn.zrj.mall.order.mapper.OrderMapper;
@@ -75,7 +75,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     @Override
     @Transactional(rollbackFor = Exception.class)
     public <T> T pay(String orderSn, Integer payType) {
-        PayTypeEnum payTypeEnum = PayTypeEnum.getValue(payType);
+        PayTypeEnum payTypeEnum = PayTypeEnum.getByPayType(payType);
         if (payTypeEnum == null) {
             throw new BusinessException("系统暂不支持该支付方式!");
         }
@@ -100,7 +100,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         String oldOutTradeNo = order.getOutTradeNo();
         log.info("商户单号为：{}", outTradeNo);
         //更新支付类型
-        order.setPayType(payTypeEnum.getValue());
+        order.setPayType(payTypeEnum.getPayType());
         order.setOutTradeNo(outTradeNo);
         this.updateById(order);
 
@@ -201,7 +201,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         Assert.isTrue(!Objects.equals(order.getStatus(), OrderStatusEnum.PENDING_PAYMENT.getCode()), "该订单未支付，无需退款！");
         Assert.isTrue(!Objects.equals(order.getStatus(), OrderStatusEnum.REFUNDED.getCode()), "该订单已退款！");
         Long memberId = UserContextHolder.getPayloadToken().getMemberId();
-        PayTypeEnum payTypeEnum = PayTypeEnum.getValue(order.getPayType());
+        PayTypeEnum payTypeEnum = PayTypeEnum.getByPayType(order.getPayType());
         String outRefundNo = payService.generateNo(memberId, payTypeEnum);
         String oldOutRefundNo = order.getOutRefundNo();
         // 如果用户的信誉积分很高就直接退款，否则就需要管理员审核后才能退款
@@ -222,7 +222,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     public <T> T payQuery(String orderSn) {
         Order order = getOrderByOrderSn(orderSn);
         Assert.isTrue(StringUtils.isNotBlank(order.getOutTradeNo()), "该订单不存在商户单号！");
-        return payService.payQuery(order.getOutTradeNo(), PayTypeEnum.getValue(order.getPayType()));
+        return payService.payQuery(order.getOutTradeNo(), PayTypeEnum.getByPayType(order.getPayType()));
     }
 
     @Override
@@ -230,7 +230,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         Order order = getOrderByOrderSn(orderSn);
         Assert.isTrue(StringUtils.isNotBlank(order.getOutTradeNo()), "该订单不存在商户单号！");
         Assert.isTrue(StringUtils.isNotBlank(order.getOutRefundNo()), "该订单不存在商户退款单号单号！");
-        return payService.refundQuery(order.getOutRefundNo(), PayTypeEnum.getValue(order.getPayType()));
+        return payService.refundQuery(order.getOutRefundNo(), PayTypeEnum.getByPayType(order.getPayType()));
     }
 
     @Override
@@ -251,7 +251,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             return false;
         }
         if (StringUtils.isNotBlank(order.getOutTradeNo())) {
-            payService.close(order.getOutTradeNo(), PayTypeEnum.getValue(order.getPayType()));
+            payService.close(order.getOutTradeNo(), PayTypeEnum.getByPayType(order.getPayType()));
         }
         order.setStatus(OrderStatusEnum.AUTO_CANCEL.getCode());
         return this.updateById(order);

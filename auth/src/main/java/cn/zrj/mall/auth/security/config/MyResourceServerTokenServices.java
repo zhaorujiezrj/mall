@@ -13,6 +13,9 @@ import org.springframework.util.Assert;
 
 import java.util.Date;
 
+/**
+ * @author zhaorujie
+ */
 @Slf4j
 public class MyResourceServerTokenServices implements ResourceServerTokenServices, InitializingBean {
 
@@ -49,7 +52,8 @@ public class MyResourceServerTokenServices implements ResourceServerTokenService
         if ((nowTokenExpiration.getTime() - now.getTime()) < 1000L * 300) {
             // 设置1小时过期，时间应该从配置中获取
             oAuth2AccessToken.setExpiration(new Date(System.currentTimeMillis() + (3600 * 1000L)));
-            tokenStore.storeAccessToken(oAuth2AccessToken, result); // 设置新的令牌 会自动再根据令牌对象过期时间设置 redis过期
+            // 设置新的令牌 会自动再根据令牌对象过期时间设置 redis过期
+            tokenStore.storeAccessToken(oAuth2AccessToken, result);
         }
         long end = System.currentTimeMillis();
         log.info("token续期耗时：{}毫秒", (end - start));

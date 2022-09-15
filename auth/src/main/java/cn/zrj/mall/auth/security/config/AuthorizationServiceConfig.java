@@ -139,7 +139,7 @@ public class AuthorizationServiceConfig extends AuthorizationServerConfigurerAda
 
         // 刷新token模式下，重写预认证提供者替换其AuthenticationManager，可自定义根据客户端ID和认证方式区分用户体系获取认证用户信息
         PreAuthenticatedAuthenticationProvider provider = new PreAuthenticatedAuthenticationProvider();
-        PreAuthenticatedUserDetailsService<PreAuthenticatedAuthenticationToken> detailsService = new PreAuthenticatedUserDetailsService<>();
+        PreAuthenticatedUserDetailsServiceImpl<PreAuthenticatedAuthenticationToken> detailsService = new PreAuthenticatedUserDetailsServiceImpl<>();
         detailsService.setSysUserDetailsService(sysUserDetailsService);
         detailsService.setMemberUserDetailsService(memberUserDetailsService);
         provider.setPreAuthenticatedUserDetailsService(detailsService);
