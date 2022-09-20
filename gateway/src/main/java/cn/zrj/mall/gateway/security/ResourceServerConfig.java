@@ -9,6 +9,7 @@ import cn.zrj.mall.gateway.util.WebFluxUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -25,6 +26,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
 import org.springframework.security.web.server.authorization.ServerAccessDeniedHandler;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.io.InputStream;
@@ -87,10 +89,8 @@ public class ResourceServerConfig {
      */
     @Bean
     public ServerAccessDeniedHandler accessDeniedHandler() {
-        return (exchange, denied) -> {
-            return Mono.defer(() -> Mono.just(exchange.getResponse()))
-                    .flatMap(response -> WebFluxUtils.writeResponse(response, ResultCode.UNAUTHORIZED));
-        };
+        return (exchange, denied) -> Mono.defer(() -> Mono.just(exchange.getResponse()))
+                .flatMap(response -> WebFluxUtils.writeResponse(response, ResultCode.UNAUTHORIZED));
     }
 
     /**
@@ -99,10 +99,8 @@ public class ResourceServerConfig {
      */
     @Bean
     public ServerAuthenticationEntryPoint authenticationEntryPoint() {
-        return (exchange, e) -> {
-            return Mono.defer(() -> Mono.just(exchange.getResponse()))
-                    .flatMap(response -> WebFluxUtils.writeResponse(response, ResultCode.TOKEN_INVALID_OR_EXPIRED));
-        };
+        return (exchange, e) -> Mono.defer(() -> Mono.just(exchange.getResponse()))
+                .flatMap(response -> WebFluxUtils.writeResponse(response, ResultCode.TOKEN_INVALID_OR_EXPIRED));
     }
 
     /**
@@ -140,4 +138,11 @@ public class ResourceServerConfig {
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }
+
+    @Bean
+    @LoadBalanced
+    public WebClient.Builder webBuilder(){
+        return WebClient.builder();
+    }
+
 }
