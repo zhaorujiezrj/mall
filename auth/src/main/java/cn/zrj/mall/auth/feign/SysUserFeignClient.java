@@ -13,6 +13,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 @FeignClient(value = "admin")
 public interface SysUserFeignClient {
 
-    @GetMapping("/api/v1/user/username/{username}")
+    @GetMapping("/api/v1/sys/user/username/{username}")
     Result<AuthUserDto> getAuthInfoByUsername(@PathVariable String username);
 }

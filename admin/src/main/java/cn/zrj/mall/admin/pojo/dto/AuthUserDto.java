@@ -1,4 +1,4 @@
-package cn.zrj.mall.admin.dto;
+package cn.zrj.mall.admin.pojo.dto;
 
 import lombok.Data;
 

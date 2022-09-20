@@ -1,9 +1,14 @@
 package cn.zrj.mall.admin.mapper;
 
 
-import cn.zrj.mall.admin.dto.AuthUserDto;
+import cn.zrj.mall.admin.pojo.dto.AuthUserDto;
 import cn.zrj.mall.admin.entity.SysUser;
+import cn.zrj.mall.admin.pojo.query.UserPageQuery;
+import cn.zrj.mall.admin.pojo.vo.user.UserVo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.ibatis.annotations.Param;
 import org.mapstruct.Mapper;
 
 /**
@@ -17,4 +22,6 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
      * @return
      */
     AuthUserDto getAuthInfoByUsername(String username);
+
+    IPage<UserVo> getUserListPage(Page<UserVo> page, @Param("query") UserPageQuery query);
 }

@@ -14,4 +14,6 @@ public interface GlobalConstants {
      * 短信验证码key前缀
      */
     String SMS_CODE_PREFIX = "SMS_CODE:";
+
+    String ROOT_ROLE_CODE = "ADMIN";
 }

@@ -5,7 +5,7 @@
 <mapper namespace="cn.zrj.mall.admin.mapper.SysUserMapper">
 
     <!-- 用户认证信息映射 一对多 -->
-    <resultMap id="AuthUserMap" type="cn.zrj.mall.admin.dto.AuthUserDto">
+    <resultMap id="AuthUserMap" type="cn.zrj.mall.admin.pojo.dto.AuthUserDto">
         <id property="userId" column="userId" jdbcType="BIGINT"/>
         <result property="username" column="username" jdbcType="VARCHAR"/>
         <result property="password" column="password" jdbcType="VARCHAR"/>
@@ -34,5 +34,36 @@
                         LEFT JOIN sys_role t3 ON t3.id = t2.role_id
         WHERE
                 t1.username = #{username} and t1.deleted=0
+    </select>
+
+    <select id="getUserListPage" resultType="cn.zrj.mall.admin.pojo.vo.user.UserVo">
+        SELECT
+        u.id,
+        u.username,
+        u.nickname,
+        u.mobile,
+        u.`status`,
+        GROUP_CONCAT( r.id ) as roleId,
+        GROUP_CONCAT( r.`name` ) as roleNames
+        FROM
+        sys_user u
+        LEFT JOIN sys_user_role ur ON u.id = ur.user_id
+        LEFT JOIN sys_role r ON r.id = ur.role_id
+        <where>
+            <if test="query.username != null and query.username != ''">
+                and u.username like concat('%', #{query.username}, '%')
+            </if>
+            <if test="query.nickname != null and query.nickname != ''">
+                and u.nickname like concat('%', #{query.nickname}, '%')
+            </if>
+            <if test="query.mobile != null and query.mobile != ''">
+                and u.mobile like concat('%', #{query.mobile}, '%')
+            </if>
+            <if test="query.status != null">
+                and u.status = #{query.status}
+            </if>
+        </where>
+        GROUP BY
+        u.id
     </select>
 </mapper>
