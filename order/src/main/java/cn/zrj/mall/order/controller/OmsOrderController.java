@@ -1,7 +1,7 @@
 package cn.zrj.mall.order.controller;
 
 import cn.zrj.mall.common.core.result.Result;
-import cn.zrj.mall.order.service.OrderService;
+import cn.zrj.mall.order.service.OmsOrderService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -17,28 +17,28 @@ import org.springframework.web.bind.annotation.RestController;
 @Api(tags = "订单管理")
 @RequestMapping("/app-api/v1/order")
 @RestController
-public class OrderController {
+public class OmsOrderController {
 
     @Autowired
-    private OrderService orderService;
+    private OmsOrderService omsOrderService;
 
     @ApiOperation("订单创建")
     @PostMapping("/create")
     public Result<Void> createOrder() {
-        orderService.createOrder();
+        omsOrderService.createOrder();
         return Result.success();
     }
 
     @ApiOperation("订单支付")
     @PostMapping("/pay")
     public <T> Result<T> pay(String orderSn, Integer payType) {
-       return Result.success(orderService.pay(orderSn, payType));
+       return Result.success(omsOrderService.pay(orderSn, payType));
     }
 
     @ApiOperation("订单退款")
     @PostMapping("refund")
     public Result<Void> refund(@ApiParam("订单编码") String orderNo, @ApiParam("状态 0=申请退款 1=同意") Integer status) {
-        orderService.refund(orderNo, status);
+        omsOrderService.refund(orderNo, status);
         return Result.success();
     }
 }

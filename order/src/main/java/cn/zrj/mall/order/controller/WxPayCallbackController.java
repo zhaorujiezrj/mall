@@ -2,7 +2,7 @@ package cn.zrj.mall.order.controller;
 
 import cn.zrj.mall.order.autoconfigure.RocketMQProducerProperties;
 import cn.zrj.mall.order.dto.WxPayNotifyRequestDto;
-import cn.zrj.mall.order.service.OrderService;
+import cn.zrj.mall.order.service.OmsOrderService;
 import cn.zrj.mall.order.util.RocketMQUtils;
 import cn.zrj.mall.order.vo.WxPayNotifyResponseVo;
 import com.github.binarywang.wxpay.constant.WxPayConstants;
@@ -28,7 +28,7 @@ public class WxPayCallbackController {
     @Autowired
     private RocketMQProducerProperties properties;
     @Autowired
-    private OrderService orderService;
+    private OmsOrderService omsOrderService;
 
     /**
      * 微信下单支付结果回调
@@ -42,7 +42,7 @@ public class WxPayCallbackController {
     public WxPayNotifyResponseVo wxPayCallbackNotify(@RequestBody String notifyData,
                                                      @RequestHeader HttpHeaders headers) {
         try {
-            orderService.wxPayCallbackNotify(notifyData, headers);
+            omsOrderService.wxPayCallbackNotify(notifyData, headers);
             return new WxPayNotifyResponseVo()
                     .setCode(WxPayConstants.ResultCode.SUCCESS)
                     .setMessage("成功");
@@ -65,7 +65,7 @@ public class WxPayCallbackController {
     public WxPayNotifyResponseVo wxRefundCallbackNotify(@RequestBody String notifyData,
                                                           @RequestHeader HttpHeaders headers) {
         try {
-            orderService.wxRefundCallbackNotify(notifyData, headers);
+            omsOrderService.wxRefundCallbackNotify(notifyData, headers);
             return new WxPayNotifyResponseVo()
                     .setCode(WxPayConstants.ResultCode.SUCCESS)
                     .setMessage("成功");

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.zrj.mall.order.mapper.OmsOrderPayMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.zrj.mall.order.entity.OmsOrderPay">
+        <id column="id" property="id" />
+        <result column="order_id" property="orderId" />
+        <result column="pay_sn" property="paySn" />
+        <result column="pay_amount" property="payAmount" />
+        <result column="pay_time" property="payTime" />
+        <result column="pay_type" property="payType" />
+        <result column="pay_status" property="payStatus" />
+        <result column="confirm_time" property="confirmTime" />
+        <result column="callback_content" property="callbackContent" />
+        <result column="callback_time" property="callbackTime" />
+        <result column="pay_subject" property="paySubject" />
+        <result column="deleted" property="deleted" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+</mapper>

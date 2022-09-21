@@ -1,6 +1,6 @@
 package cn.zrj.mall.order.controller;
 
-import cn.zrj.mall.order.service.OrderService;
+import cn.zrj.mall.order.service.OmsOrderService;
 import com.alipay.api.AlipayApiException;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 public class AlipayCallbackController {
 
     @Autowired
-    private OrderService orderService;
+    private OmsOrderService omsOrderService;
 
     /**
      * 支付宝下单和退款的回调接口都是同一个
@@ -33,6 +33,6 @@ public class AlipayCallbackController {
     @ApiIgnore
     @PostMapping("/order/notify")
     public String alipayCallbackNotify(HttpServletRequest request) throws AlipayApiException {
-        return orderService.alipayCallbackNotify(request);
+        return omsOrderService.alipayCallbackNotify(request);
     }
 }

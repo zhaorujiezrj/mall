@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.zrj.mall.order.mapper.OmsOrderPayMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.zrj.mall.order.entity.OmsOrder">
+        <id column="id" property="id" />
+        <result column="order_sn" property="orderSn" />
+        <result column="pay_sn" property="totalAmount" />
+        <result column="total_quantity" property="totalQuantity" />
+        <result column="source_type" property="sourceType" />
+        <result column="status" property="status" />
+        <result column="pay_status" property="remark" />
+        <result column="confirm_time" property="memberId" />
+        <result column="callback_content" property="couponId" />
+        <result column="callback_time" property="couponAmount" />
+        <result column="pay_subject" property="freightAmount" />
+        <result column="pay_amount" property="payAmount" />
+        <result column="pay_time" property="payTime" />
+        <result column="pay_type" property="payType" />
+        <result column="out_trade_no" property="outTradeNo" />
+        <result column="transaction_id" property="transactionId" />
+        <result column="out_refund_no" property="outRefundNo" />
+        <result column="refund_id" property="refundId" />
+        <result column="delivery_time" property="deliveryTime" />
+        <result column="receive_time" property="receiveTime" />
+        <result column="comment_time" property="commentTime" />
+        <result column="deleted" property="deleted" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+</mapper>

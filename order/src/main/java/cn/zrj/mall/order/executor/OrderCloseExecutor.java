@@ -1,12 +1,11 @@
 package cn.zrj.mall.order.executor;
 
 import cn.zrj.mall.order.autoconfigure.RocketMQConsumerProperties;
-import cn.zrj.mall.order.entity.Order;
-import cn.zrj.mall.order.service.OrderService;
+import cn.zrj.mall.order.entity.OmsOrder;
+import cn.zrj.mall.order.service.OmsOrderService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -23,7 +22,7 @@ public class OrderCloseExecutor implements OrderMessageExecutor {
     @Autowired
     private RocketMQConsumerProperties properties;
     @Autowired
-    private OrderService orderService;
+    private OmsOrderService omsOrderService;
 
     @Override
     public boolean check(MessageExt messageExt) {
@@ -32,10 +31,10 @@ public class OrderCloseExecutor implements OrderMessageExecutor {
 
     @Override
     public void executor(String content) throws JsonProcessingException {
-        Order order = objectMapper.readValue(content, Order.class);
-        log.info("orderCancel:{}", order);
+        OmsOrder omsOrder = objectMapper.readValue(content, OmsOrder.class);
+        log.info("orderCancel:{}", omsOrder);
 
-        if (orderService.orderClose(order.getOrderSn())) {
+        if (omsOrderService.orderClose(omsOrder.getOrderSn())) {
             //todo 系统关闭超时支付的订单，还需要回退库存
         }
     }

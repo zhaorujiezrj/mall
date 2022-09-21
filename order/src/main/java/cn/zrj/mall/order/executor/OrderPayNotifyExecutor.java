@@ -2,7 +2,7 @@ package cn.zrj.mall.order.executor;
 
 import cn.zrj.mall.order.autoconfigure.RocketMQConsumerProperties;
 import cn.zrj.mall.order.dto.WxPayNotifyRequestDto;
-import cn.zrj.mall.order.service.OrderService;
+import cn.zrj.mall.order.service.OmsOrderService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,7 @@ public class OrderPayNotifyExecutor implements OrderMessageExecutor {
     @Autowired
     private RocketMQConsumerProperties properties;
     @Autowired
-    private OrderService orderService;
+    private OmsOrderService omsOrderService;
 
     @Override
     public boolean check(MessageExt messageExt) {
@@ -32,6 +32,6 @@ public class OrderPayNotifyExecutor implements OrderMessageExecutor {
     @Override
     public void executor(String content) throws JsonProcessingException {
         WxPayNotifyRequestDto request = objectMapper.readValue(content, WxPayNotifyRequestDto.class);
-        orderService.wxPayCallbackNotify(request.getNotifyData(), request.getHeaders());
+        omsOrderService.wxPayCallbackNotify(request.getNotifyData(), request.getHeaders());
     }
 }

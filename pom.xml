@@ -16,6 +16,7 @@
         <module>admin</module>
         <module>member</module>
         <module>order</module>
+        <module>goods</module>
     </modules>
 
     <parent>

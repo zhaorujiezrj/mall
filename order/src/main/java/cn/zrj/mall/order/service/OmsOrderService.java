@@ -1,6 +1,6 @@
 package cn.zrj.mall.order.service;
 
-import cn.zrj.mall.order.entity.Order;
+import cn.zrj.mall.order.entity.OmsOrder;
 import cn.zrj.mall.order.pay.enums.PayTypeEnum;
 import com.alipay.api.AlipayApiException;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author zhaorujie
  * @date 2022/8/25
  */
-public interface OrderService extends IService<Order> {
+public interface OmsOrderService extends IService<OmsOrder> {
     /**
      * 创建订单
      */
@@ -29,12 +29,12 @@ public interface OrderService extends IService<Order> {
 
     /**
      * 订单支付
-     * @param order 订单实体
+     * @param omsOrder 订单实体
      * @param payTypeEnum 支付类型
      * @param <T> 返回的实体类型
      * @return
      */
-    <T> T pay(Order order, PayTypeEnum payTypeEnum);
+    <T> T pay(OmsOrder omsOrder, PayTypeEnum payTypeEnum);
 
 
     /**

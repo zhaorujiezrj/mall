@@ -18,7 +18,7 @@ import java.util.Date;
 @Data
 @Accessors(chain = true)
 @TableName("oms_order")
-public class Order {
+public class OmsOrder {
 
 	/**
 	 * id
