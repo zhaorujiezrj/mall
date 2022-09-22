@@ -2,6 +2,7 @@ package cn.zrj.mall.auth.security.config;
 
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.json.JSONUtil;
+import cn.zrj.mall.auth.security.clientdetails.ClientDetailsServiceImpl;
 import cn.zrj.mall.auth.security.extension.mobile.SmsCodeTokenGranter;
 import cn.zrj.mall.auth.security.extension.wechat.WeChatTokenGranter;
 import cn.zrj.mall.auth.security.userdetails.member.MemberUserDetails;
@@ -11,6 +12,7 @@ import cn.zrj.mall.auth.security.userdetails.user.SysUserDetailsServiceImpl;
 import cn.zrj.mall.common.core.constant.RedisConstants;
 import cn.zrj.mall.common.core.result.Result;
 import cn.zrj.mall.common.core.result.ResultCode;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,10 +30,8 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.A
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.oauth2.provider.CompositeTokenGranter;
 import org.springframework.security.oauth2.provider.TokenGranter;
-import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
@@ -43,7 +43,6 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
-import javax.sql.DataSource;
 import java.security.KeyPair;
 import java.util.*;
 
@@ -53,30 +52,15 @@ import java.util.*;
  */
 @Configuration
 @EnableAuthorizationServer
+@RequiredArgsConstructor
 @Slf4j
 public class AuthorizationServiceConfig extends AuthorizationServerConfigurerAdapter {
 
-    private final DataSource dataSource;
-
     private final RedisConnectionFactory connectionFactory;
-
     private final AuthenticationManager authenticationManager;
-
     private final SysUserDetailsServiceImpl sysUserDetailsService;
-
     private final MemberUserDetailsServiceImpl memberUserDetailsService;
-
-    public AuthorizationServiceConfig(DataSource dataSource,
-                                      RedisConnectionFactory connectionFactory,
-                                      AuthenticationManager authenticationManager,
-                                      SysUserDetailsServiceImpl sysUserDetailsService,
-                                      MemberUserDetailsServiceImpl memberUserDetailsService) {
-        this.dataSource = dataSource;
-        this.connectionFactory = connectionFactory;
-        this.authenticationManager = authenticationManager;
-        this.sysUserDetailsService = sysUserDetailsService;
-        this.memberUserDetailsService = memberUserDetailsService;
-    }
+    private final ClientDetailsServiceImpl clientDetailsService;
 
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
@@ -85,12 +69,7 @@ public class AuthorizationServiceConfig extends AuthorizationServerConfigurerAda
 
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        clients.withClientDetails(clientDetailsService());
-    }
-
-    @Bean
-    public ClientDetailsService clientDetailsService() {
-        return new JdbcClientDetailsService(dataSource);
+        clients.withClientDetails(clientDetailsService);
     }
 
     @Override
@@ -132,7 +111,7 @@ public class AuthorizationServiceConfig extends AuthorizationServerConfigurerAda
 
         DefaultTokenServices tokenServices = new DefaultTokenServices();
         tokenServices.setTokenStore(endpoints.getTokenStore());
-        tokenServices.setClientDetailsService(clientDetailsService());
+        tokenServices.setClientDetailsService(clientDetailsService);
         tokenServices.setSupportRefreshToken(true);
         tokenServices.setTokenEnhancer(tokenEnhancerChain);
 

@@ -1,6 +1,7 @@
 package cn.zrj.mall.auth.security.userdetails.user;
 
 import cn.zrj.mall.auth.dto.AuthUserDto;
+import cn.zrj.mall.auth.enums.PasswordEncoderTypeEnum;
 import cn.zrj.mall.common.core.constant.GlobalConstants;
 import lombok.Data;
 import org.apache.commons.collections4.CollectionUtils;
@@ -9,9 +10,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * @author zhaorujie
@@ -27,14 +27,14 @@ public class SysUserDetails implements UserDetails, Serializable {
     private String mobile;
     private Collection<SimpleGrantedAuthority> authorities;
 
-    public SysUserDetails(AuthUserDto authUserDto) {
-        this.setUserId(authUserDto.getUserId());
-        this.setUsername(authUserDto.getUsername());
-        this.setPassword(authUserDto.getPassword());
-        this.setEnabled(Objects.equals(GlobalConstants.STATUS_YES, authUserDto.getStatus()));
-        this.setMobile(authUserDto.getMobile());
-        if (CollectionUtils.isNotEmpty(authUserDto.getRoles())) {
-            this.setAuthorities(authUserDto.getRoles().stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
+    public SysUserDetails(AuthUserDto user) {
+        this.setUserId(user.getUserId());
+        this.setUsername(user.getUsername());
+        this.setPassword(PasswordEncoderTypeEnum.BCRYPT.getPrefix() + user.getPassword());
+        this.setEnabled(GlobalConstants.STATUS_YES.equals(user.getStatus()));
+        if (CollectionUtils.isNotEmpty(user.getRoles())) {
+            authorities = new ArrayList<>();
+            user.getRoles().forEach(role -> authorities.add(new SimpleGrantedAuthority(role)));
         }
     }
 

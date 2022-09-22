@@ -60,6 +60,13 @@ security:
   refreshTokenUrl: "http://localhost:9001/oauth/refreshToken?accessToken="
 
   ignoreUrls:
+    # Knife4j
+    - /webjars/**
+    - /doc.html
+    - /swagger-resources/**
+    - /*/v2/api-docs
+
+    # oauth2
     - /auth/oauth/**
     - /admin/sms/**
 

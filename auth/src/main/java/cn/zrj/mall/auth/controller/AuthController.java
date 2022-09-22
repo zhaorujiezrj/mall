@@ -48,7 +48,7 @@ public class AuthController {
 
     @ApiOperation(value = "OAuth2刷新token", notes = "刷新token")
     @GetMapping("refreshToken")
-    public void tokenRenewal(@RequestParam String accessToken) {
+    public void refreshToken(@RequestParam String accessToken) {
         serverTokenServices.loadAuthentication(accessToken);
     }
 }
