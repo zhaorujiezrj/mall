@@ -1,7 +1,5 @@
 package cn.zrj.mall.order.pay.enums;
 
-import cn.zrj.mall.order.pay.constant.BeanNameConstants;
-
 import java.util.Objects;
 
 /**
@@ -10,14 +8,14 @@ import java.util.Objects;
  */
 public enum PayTypeEnum {
 
-    WX_JSAPI(10, "微信JSAPI支付", BeanNameConstants.WX),
-    WX_APP(11, "微信APP支付", BeanNameConstants.WX),
-    WX_H5(12, "微信H5支付", BeanNameConstants.WX),
-    WX_NATIVE(13, "微信native支付", BeanNameConstants.WX),
-    ALI_APP(20, "支付宝APP支付", BeanNameConstants.ALI),
-    ALI_WAP(21, "支付宝手机网站支付", BeanNameConstants.ALI),
-    ALI_PC(22, "支付宝PC网站支付", BeanNameConstants.ALI),
-    BALANCE(90, "会员余额支付", BeanNameConstants.OTHER),
+    WX_JSAPI(10, "微信JSAPI支付", PayOrgType.WX),
+    WX_APP(11, "微信APP支付", PayOrgType.WX),
+    WX_H5(12, "微信H5支付", PayOrgType.WX),
+    WX_NATIVE(13, "微信native支付", PayOrgType.WX),
+    ALI_APP(20, "支付宝APP支付", PayOrgType.ALI),
+    ALI_WAP(21, "支付宝手机网站支付", PayOrgType.ALI),
+    ALI_PC(22, "支付宝PC网站支付", PayOrgType.ALI),
+    BALANCE(90, "会员余额支付", PayOrgType.ALI),
 
     ;
 
@@ -30,14 +28,14 @@ public enum PayTypeEnum {
      */
     private final String name;
     /**
-     * 支付机构beanName
+     * 支付机构
      */
-    private final String beanName;
+    private final PayOrgType payOrgType;
 
-    PayTypeEnum(Integer payType, String name, String beanName) {
+    PayTypeEnum(Integer payType, String name, PayOrgType payOrgType) {
         this.payType = payType;
         this.name = name;
-        this.beanName = beanName;
+        this.payOrgType = payOrgType;
     }
 
     public static PayTypeEnum getByPayType(Integer payType) {
@@ -57,7 +55,7 @@ public enum PayTypeEnum {
         return name;
     }
 
-    public String getBeanName() {
-        return beanName;
+    public PayOrgType getPayOrgType() {
+        return payOrgType;
     }
 }

@@ -1,9 +1,9 @@
-package cn.zrj.mall.order.pay.service.impl;
+package cn.zrj.mall.order.pay.core;
 
 import cn.zrj.mall.common.core.exception.BusinessException;
 import cn.zrj.mall.order.pay.config.AlipayProperties;
-import cn.zrj.mall.order.pay.constant.BeanNameConstants;
 import cn.zrj.mall.order.pay.enums.AliTradeTypeEnum;
+import cn.zrj.mall.order.pay.enums.PayOrgType;
 import cn.zrj.mall.order.pay.enums.PayTypeEnum;
 import cn.zrj.mall.order.pay.result.AlipayNotifyResponse;
 import com.alipay.api.AlipayApiException;
@@ -12,9 +12,8 @@ import com.alipay.api.domain.*;
 import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.api.request.*;
 import com.alipay.api.response.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -29,22 +28,15 @@ import java.util.Objects;
 
 /**
  * @author zhaorujie
- * @date 2022/9/7
+ * @date 2022/10/9
  */
-@Service(BeanNameConstants.ALI)
-public class AlipayServiceImpl extends AbstractBasePayServiceImpl {
-
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
+@Service
+@Slf4j
+public class AliPayServiceImpl extends AbstractPayService {
 
     private final AlipayClient alipayClient;
 
     private final AlipayProperties alipayProperties;
-
-    public AlipayServiceImpl(AlipayClient alipayClient,
-                             AlipayProperties alipayProperties) {
-        this.alipayClient = alipayClient;
-        this.alipayProperties = alipayProperties;
-    }
 
     private static final EnumMap<PayTypeEnum, AliTradeTypeEnum> TRADE_TYPE_MAP = new EnumMap<>(PayTypeEnum.class);
 
@@ -54,8 +46,14 @@ public class AlipayServiceImpl extends AbstractBasePayServiceImpl {
         TRADE_TYPE_MAP.put(PayTypeEnum.ALI_PC, AliTradeTypeEnum.PC);
     }
 
+    public AliPayServiceImpl(AlipayClient alipayClient, AlipayProperties alipayProperties) {
+        super(PayOrgType.ALI);
+        this.alipayClient = alipayClient;
+        this.alipayProperties = alipayProperties;
+    }
+
     @Override
-    public <T> T doPay(String oldOutTradeNo, String outTradeNo, Long payAmount, String description, String openid, PayTypeEnum payTypeEnum) {
+    protected <T> T doPay(String oldOutTradeNo, String outTradeNo, Long payAmount, String description, String openid, PayTypeEnum payTypeEnum) {
         //如果已经有outTradeNo了就先进行关单
         if (StringUtils.isNotBlank(oldOutTradeNo)) {
             AlipayTradeQueryResponse queryResponse = doPayQuery(oldOutTradeNo);
@@ -126,7 +124,7 @@ public class AlipayServiceImpl extends AbstractBasePayServiceImpl {
     }
 
     @Override
-    public void doClose(String outTradeNo) {
+    protected void doClose(String outTradeNo) {
         AlipayTradeCloseRequest request = new AlipayTradeCloseRequest();
         AlipayTradeCloseModel model = new AlipayTradeCloseModel();
         model.setOutTradeNo(outTradeNo);
@@ -142,7 +140,7 @@ public class AlipayServiceImpl extends AbstractBasePayServiceImpl {
     }
 
     @Override
-    public void doRefund(String outTradeNo, String oldOutRefundNo, String outRefundNo, Long refundAmount, String reason) {
+    protected void doRefund(String outTradeNo, String oldOutRefundNo, String outRefundNo, Long refundAmount, String reason) {
 
         if (StringUtils.isNotBlank(oldOutRefundNo)) {
             AlipayTradeFastpayRefundQueryResponse response = doRefundQuery(oldOutRefundNo);
@@ -170,7 +168,7 @@ public class AlipayServiceImpl extends AbstractBasePayServiceImpl {
     }
 
     @Override
-    public <T> T doPayQuery(String outTradeNo) {
+    protected <T> T doPayQuery(String outTradeNo) {
         AlipayTradeQueryRequest request = new AlipayTradeQueryRequest();
         AlipayTradeQueryModel model = new AlipayTradeQueryModel();
         model.setOutTradeNo(outTradeNo);
@@ -185,7 +183,7 @@ public class AlipayServiceImpl extends AbstractBasePayServiceImpl {
     }
 
     @Override
-    public <T> T doRefundQuery(String outRefundNo) {
+    protected <T> T doRefundQuery(String outRefundNo) {
         AlipayTradeFastpayRefundQueryRequest request = new AlipayTradeFastpayRefundQueryRequest();
         AlipayTradeFastpayRefundQueryModel model = new AlipayTradeFastpayRefundQueryModel();
         model.setOutRequestNo(outRefundNo);
@@ -200,12 +198,12 @@ public class AlipayServiceImpl extends AbstractBasePayServiceImpl {
     }
 
     @Override
-    public <T> T doPayCallbackNotify(HttpServletRequest request, String data, HttpHeaders headers) {
+    protected <T> T doPayCallbackNotify(HttpServletRequest request, String data, HttpHeaders headers) {
         return callbackNotify(request);
     }
 
     @Override
-    public <T> T doRefundCallbackNotify(HttpServletRequest request, String data, HttpHeaders headers) {
+    protected <T> T doRefundCallbackNotify(HttpServletRequest request, String data, HttpHeaders headers) {
         return callbackNotify(request);
     }
 

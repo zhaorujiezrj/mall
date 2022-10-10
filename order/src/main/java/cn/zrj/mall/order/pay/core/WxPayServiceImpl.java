@@ -1,8 +1,8 @@
-package cn.zrj.mall.order.pay.service.impl;
+package cn.zrj.mall.order.pay.core;
 
 import cn.zrj.mall.common.core.exception.BusinessException;
 import cn.zrj.mall.order.pay.config.WxPayProperties;
-import cn.zrj.mall.order.pay.constant.BeanNameConstants;
+import cn.zrj.mall.order.pay.enums.PayOrgType;
 import cn.zrj.mall.order.pay.enums.PayTypeEnum;
 import com.github.binarywang.wxpay.bean.notify.SignatureHeader;
 import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyV3Result;
@@ -16,9 +16,8 @@ import com.github.binarywang.wxpay.bean.result.enums.TradeTypeEnum;
 import com.github.binarywang.wxpay.constant.WxPayConstants;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -29,22 +28,15 @@ import java.util.Objects;
 
 /**
  * @author zhaorujie
- * @date 2022/9/7
+ * @date 2022/10/9
  */
-@Service(BeanNameConstants.WX)
-public class WxPayServiceImpl extends AbstractBasePayServiceImpl {
-
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
+@Service
+@Slf4j
+public class WxPayServiceImpl extends AbstractPayService {
 
     private final WxPayService wxPayService;
 
     private final WxPayProperties wxPayProperties;
-
-    public WxPayServiceImpl(WxPayService wxPayService,
-                            WxPayProperties wxPayProperties) {
-        this.wxPayService = wxPayService;
-        this.wxPayProperties = wxPayProperties;
-    }
 
     private static final EnumMap<PayTypeEnum, TradeTypeEnum> TRADE_TYPE_MAP = new EnumMap<>(PayTypeEnum.class);
 
@@ -55,8 +47,14 @@ public class WxPayServiceImpl extends AbstractBasePayServiceImpl {
         TRADE_TYPE_MAP.put(PayTypeEnum.WX_NATIVE, TradeTypeEnum.NATIVE);
     }
 
+    public WxPayServiceImpl(WxPayService wxPayService, WxPayProperties wxPayProperties) {
+        super(PayOrgType.WX);
+        this.wxPayService = wxPayService;
+        this.wxPayProperties = wxPayProperties;
+    }
+
     @Override
-    public <T> T doPay(String oldOutTradeNo, String outTradeNo, Long payAmount, String description, String openid, PayTypeEnum payTypeEnum) {
+    protected <T> T doPay(String oldOutTradeNo, String outTradeNo, Long payAmount, String description, String openid, PayTypeEnum payTypeEnum) {
         //如果已经有oldOutTradeNo了就先进行关单
         if (StringUtils.isNotBlank(oldOutTradeNo)) {
             WxPayOrderQueryV3Result result = doPayQuery(outTradeNo);
@@ -73,7 +71,8 @@ public class WxPayServiceImpl extends AbstractBasePayServiceImpl {
                 .setDescription(description);
 
         //jsapi支付才需要openId
-        if (StringUtils.isNotBlank(openid)) {
+        if (PayTypeEnum.WX_JSAPI.equals(payTypeEnum)) {
+            Assert.isTrue(StringUtils.isBlank(openid), "openId不能为空！");
             wxPayUnifiedOrderV3Request.setPayer(new WxPayUnifiedOrderV3Request.Payer().setOpenid(openid));
         }
         try {
@@ -85,7 +84,7 @@ public class WxPayServiceImpl extends AbstractBasePayServiceImpl {
     }
 
     @Override
-    public void doClose(String outTradeNo) {
+    protected void doClose(String outTradeNo) {
         try {
             wxPayService.closeOrderV3(outTradeNo);
             log.debug("微信关单成功,商户单号：{}", outTradeNo);
@@ -96,7 +95,7 @@ public class WxPayServiceImpl extends AbstractBasePayServiceImpl {
     }
 
     @Override
-    public void doRefund(String outTradeNo, String oldOutRefundNo, String outRefundNo, Long refundAmount, String reason) {
+    protected void doRefund(String outTradeNo, String oldOutRefundNo, String outRefundNo, Long refundAmount, String reason) {
         if (StringUtils.isNotBlank(oldOutRefundNo)) {
             WxPayRefundQueryV3Result result = doRefundQuery(oldOutRefundNo);
             Assert.isTrue(!Objects.equals(result.getStatus(), WxPayConstants.WxpayTradeStatus.SUCCESS), "该订单已退款，请刷新");
@@ -118,7 +117,7 @@ public class WxPayServiceImpl extends AbstractBasePayServiceImpl {
     }
 
     @Override
-    public <T> T doPayQuery(String outTradeNo) {
+    protected <T> T doPayQuery(String outTradeNo) {
         try {
             WxPayOrderQueryV3Result result = wxPayService.queryOrderV3(new WxPayOrderQueryV3Request().setOutTradeNo(outTradeNo));
             return (T) result;
@@ -129,7 +128,7 @@ public class WxPayServiceImpl extends AbstractBasePayServiceImpl {
     }
 
     @Override
-    public <T> T doRefundQuery(String outRefundNo) {
+    protected <T> T doRefundQuery(String outRefundNo) {
         try {
             WxPayRefundQueryV3Result result = wxPayService.refundQueryV3(outRefundNo);
             return (T) result;
@@ -140,7 +139,7 @@ public class WxPayServiceImpl extends AbstractBasePayServiceImpl {
     }
 
     @Override
-    public <T> T doPayCallbackNotify(HttpServletRequest request, String data, HttpHeaders headers) {
+    protected <T> T doPayCallbackNotify(HttpServletRequest request, String data, HttpHeaders headers) {
         try {
             WxPayOrderNotifyV3Result.DecryptNotifyResult result = wxPayService.parseOrderNotifyV3Result(data, this.getSignatureHeader(headers)).getResult();
             return (T) result;
@@ -151,7 +150,7 @@ public class WxPayServiceImpl extends AbstractBasePayServiceImpl {
     }
 
     @Override
-    public <T> T doRefundCallbackNotify(HttpServletRequest request, String data, HttpHeaders headers) {
+    protected <T> T doRefundCallbackNotify(HttpServletRequest request, String data, HttpHeaders headers) {
         try {
             WxPayRefundNotifyV3Result.DecryptNotifyResult result = wxPayService.parseRefundNotifyV3Result(data, this.getSignatureHeader(headers)).getResult();
             return (T) result;

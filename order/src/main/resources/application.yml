@@ -78,3 +78,8 @@ redisson:
   database: 1
   min-idle: 2
 
+logging:
+  level:
+    com.github.binarywang.wxpay: debug
+
+

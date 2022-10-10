@@ -8,13 +8,14 @@ import cn.zrj.mall.common.core.security.UserContextHolder;
 import cn.zrj.mall.common.core.util.BusinessNoUtils;
 import cn.zrj.mall.order.autoconfigure.RocketMQProducerProperties;
 import cn.zrj.mall.order.entity.OmsOrder;
+import cn.zrj.mall.order.pay.core.PayService;
 import cn.zrj.mall.order.pay.enums.AlipayTradeStatusEnum;
 import cn.zrj.mall.order.enums.OrderStatusEnum;
+import cn.zrj.mall.order.pay.enums.PayOrgType;
 import cn.zrj.mall.order.pay.result.AlipayNotifyResponse;
 import cn.zrj.mall.order.pay.enums.PayTypeEnum;
 import cn.zrj.mall.order.feign.MemberFeignClient;
 import cn.zrj.mall.order.mapper.OmsOrderMapper;
-import cn.zrj.mall.order.pay.service.PayService;
 import cn.zrj.mall.order.service.OmsOrderService;
 import cn.zrj.mall.order.util.RocketMQUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -34,8 +35,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author zhaorujie
@@ -45,14 +49,23 @@ import java.util.Optional;
 @Slf4j
 public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderMapper, OmsOrder> implements OmsOrderService {
 
+
+    private final Map<PayOrgType, PayService> map;
+
+    public OmsOrderServiceImpl(List<PayService> payServiceList) {
+        this.map = payServiceList.stream().collect(Collectors.toMap(PayService::getOrganizationType, v -> v));
+    }
+
     @Autowired
     private RocketMQProducerProperties properties;
     @Autowired
     private RedissonClient redissonClient;
     @Autowired
     private MemberFeignClient memberFeignClient;
-    @Autowired
-    private PayService payService;
+//    @Autowired
+//    private PayService payService;
+
+
 
 
     @Override
@@ -96,7 +109,8 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderMapper, OmsOrder> i
     @Override
     public <T> T pay(OmsOrder omsOrder, PayTypeEnum payTypeEnum) {
         Long memberId = UserContextHolder.getPayloadToken().getMemberId();
-        String outTradeNo = payService.generateNo(memberId, payTypeEnum);
+        String outTradeNo = map.get(payTypeEnum.getPayOrgType())
+                .generateNo(memberId, payTypeEnum);
         String oldOutTradeNo = omsOrder.getOutTradeNo();
         log.info("商户单号为：{}", outTradeNo);
         //更新支付类型
@@ -108,12 +122,12 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderMapper, OmsOrder> i
         if (Objects.equals(payTypeEnum, PayTypeEnum.WX_JSAPI)) {
             openid = memberFeignClient.getOpenidById(memberId).getData();
         }
-        return payService.pay(oldOutTradeNo, outTradeNo, omsOrder.getPayAmount(), "赅买-订单编号" + omsOrder.getOrderSn(), openid, payTypeEnum);
+        return map.get(payTypeEnum.getPayOrgType()).pay(oldOutTradeNo, outTradeNo, omsOrder.getPayAmount(), "赅买-订单编号" + omsOrder.getOrderSn(), openid, payTypeEnum);
     }
 
     @Override
     public String alipayCallbackNotify(HttpServletRequest request) {
-        AlipayNotifyResponse response = payService.payCallbackNotify(request, null, null, PayTypeEnum.ALI_WAP);
+        AlipayNotifyResponse response = map.get(PayOrgType.ALI).payCallbackNotify(request, null, null);
         if (response.isSignVerified()) {
             LambdaQueryWrapper<OmsOrder> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(OmsOrder::getOutTradeNo, response.getOutTradeNo());
@@ -153,7 +167,7 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderMapper, OmsOrder> i
     @Override
     public void wxPayCallbackNotify(String data, HttpHeaders headers) {
         log.info("开始处理支付结果通知");
-        WxPayOrderNotifyV3Result.DecryptNotifyResult result = payService.payCallbackNotify(null, data, headers, PayTypeEnum.WX_JSAPI);
+        WxPayOrderNotifyV3Result.DecryptNotifyResult result = map.get(PayOrgType.WX).payCallbackNotify(null, data, headers);
         log.debug("支付通知解密成功：[{}]", result.toString());
         LambdaQueryWrapper<OmsOrder> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(OmsOrder::getOutTradeNo, result.getOutTradeNo());
@@ -178,7 +192,7 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderMapper, OmsOrder> i
     @Override
     public void wxRefundCallbackNotify(String data, HttpHeaders headers) {
         log.info("开始处理退款结果通知");
-        WxPayRefundNotifyV3Result.DecryptNotifyResult result = payService.refundCallbackNotify(null, data, headers, PayTypeEnum.WX_JSAPI);
+        WxPayRefundNotifyV3Result.DecryptNotifyResult result = map.get(PayOrgType.WX).refundCallbackNotify(null, data, headers);
         log.debug("退款通知解密成功：[{}]", result.toString());
         LambdaQueryWrapper<OmsOrder> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(OmsOrder::getOutTradeNo, result.getOutTradeNo());
@@ -202,19 +216,19 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderMapper, OmsOrder> i
         Assert.isTrue(!Objects.equals(omsOrder.getStatus(), OrderStatusEnum.REFUNDED.getCode()), "该订单已退款！");
         Long memberId = UserContextHolder.getPayloadToken().getMemberId();
         PayTypeEnum payTypeEnum = PayTypeEnum.getByPayType(omsOrder.getPayType());
-        String outRefundNo = payService.generateNo(memberId, payTypeEnum);
+        String outRefundNo = map.get(payTypeEnum.getPayOrgType()).generateNo(memberId, payTypeEnum);
         String oldOutRefundNo = omsOrder.getOutRefundNo();
         // 如果用户的信誉积分很高就直接退款，否则就需要管理员审核后才能退款
         if (status == 1) {
             //订单价格小于20块就直接退款
             if (omsOrder.getPayAmount() < 100L * 20) {
-                payService.refund(omsOrder.getOutTradeNo(), omsOrder.getOutRefundNo(), outRefundNo, omsOrder.getPayAmount(), "用户申请退款", payTypeEnum);
+                map.get(payTypeEnum.getPayOrgType()).refund(omsOrder.getOutTradeNo(), omsOrder.getOutRefundNo(), outRefundNo, omsOrder.getPayAmount(), "用户申请退款");
             } else {
                 omsOrder.setStatus(OrderStatusEnum.APPLY_REFUND.getCode());
                 this.updateById(omsOrder);
             }
         } else {
-            payService.refund(omsOrder.getOutTradeNo(), oldOutRefundNo, outRefundNo, omsOrder.getPayAmount(), "用户申请退款", payTypeEnum);
+            map.get(payTypeEnum.getPayOrgType()).refund(omsOrder.getOutTradeNo(), oldOutRefundNo, outRefundNo, omsOrder.getPayAmount(), "用户申请退款");
         }
     }
 
@@ -222,7 +236,7 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderMapper, OmsOrder> i
     public <T> T payQuery(String orderSn) {
         OmsOrder omsOrder = getOrderByOrderSn(orderSn);
         Assert.isTrue(StringUtils.isNotBlank(omsOrder.getOutTradeNo()), "该订单不存在商户单号！");
-        return payService.payQuery(omsOrder.getOutTradeNo(), PayTypeEnum.getByPayType(omsOrder.getPayType()));
+        return map.get(PayTypeEnum.getByPayType(omsOrder.getPayType()).getPayOrgType()).payQuery(omsOrder.getOutTradeNo());
     }
 
     @Override
@@ -230,7 +244,8 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderMapper, OmsOrder> i
         OmsOrder omsOrder = getOrderByOrderSn(orderSn);
         Assert.isTrue(StringUtils.isNotBlank(omsOrder.getOutTradeNo()), "该订单不存在商户单号！");
         Assert.isTrue(StringUtils.isNotBlank(omsOrder.getOutRefundNo()), "该订单不存在商户退款单号单号！");
-        return payService.refundQuery(omsOrder.getOutRefundNo(), PayTypeEnum.getByPayType(omsOrder.getPayType()));
+        PayTypeEnum payType = PayTypeEnum.getByPayType(omsOrder.getPayType());
+        return map.get(payType.getPayOrgType()).refundQuery(omsOrder.getOutRefundNo());
     }
 
     @Override
@@ -251,7 +266,8 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderMapper, OmsOrder> i
             return false;
         }
         if (StringUtils.isNotBlank(omsOrder.getOutTradeNo())) {
-            payService.close(omsOrder.getOutTradeNo(), PayTypeEnum.getByPayType(omsOrder.getPayType()));
+            PayTypeEnum payType = PayTypeEnum.getByPayType(omsOrder.getPayType());
+            map.get(payType.getPayOrgType()).close(omsOrder.getOutTradeNo());
         }
         omsOrder.setStatus(OrderStatusEnum.AUTO_CANCEL.getCode());
         return this.updateById(omsOrder);

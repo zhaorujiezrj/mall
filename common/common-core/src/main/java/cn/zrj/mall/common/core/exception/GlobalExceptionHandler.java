@@ -180,6 +180,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(Exception.class)
     public <T> Result<T> handleException(Exception e) {
+        log.error("Exception:{}", e);
         return Result.error(e.getLocalizedMessage());
     }
 
