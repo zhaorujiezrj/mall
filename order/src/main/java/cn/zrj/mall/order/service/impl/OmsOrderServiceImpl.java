@@ -86,27 +86,23 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderMapper, OmsOrder> i
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public <T> T pay(String orderSn, Integer payType) {
         PayTypeEnum payTypeEnum = PayTypeEnum.getByPayType(payType);
-        if (payTypeEnum == null) {
-            throw new BusinessException("系统暂不支持该支付方式!");
-        }
+        Assert.notNull(payTypeEnum, "系统暂不支持该支付方式!");
         OmsOrder omsOrder = getOrderByOrderSn(orderSn);
         Assert.isTrue(Objects.equals(OrderStatusEnum.PENDING_PAYMENT.getCode(), omsOrder.getStatus()), "订单不可支付，请刷新查看订单状态");
 
         RLock lock = redissonClient.getLock(RedisConstants.ORDER_SN_PREFIX + orderSn);
         try {
             lock.lock();
-            T result = this.pay(omsOrder, payTypeEnum);
-            //TODO 支付成功后要扣库存
-            return result;
+            return this.pay(omsOrder, payTypeEnum);
         } finally {
             lock.unlock();
         }
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public <T> T pay(OmsOrder omsOrder, PayTypeEnum payTypeEnum) {
         Long memberId = UserContextHolder.getPayloadToken().getMemberId();
         String outTradeNo = map.get(payTypeEnum.getPayOrgType())
