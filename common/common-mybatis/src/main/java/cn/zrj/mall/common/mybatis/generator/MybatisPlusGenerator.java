@@ -23,7 +23,7 @@ public class MybatisPlusGenerator {
 
         String projectPath = System.getProperty("user.dir");
         AtomicReference<String> modulePath = new AtomicReference<>("");
-        FastAutoGenerator.create("jdbc:mysql://127.0.0.1:3306/mall_test?useUnicode=true&characterEncoding=UTF-8&useSSL=false",
+        FastAutoGenerator.create("jdbc:mysql://127.0.0.1:3306/my-im?useUnicode=true&characterEncoding=UTF-8&useSSL=false",
                         "root", "root")
                 // 全局配置
                 .globalConfig((scanner, builder) -> {

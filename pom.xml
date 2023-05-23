@@ -17,6 +17,7 @@
         <module>member</module>
         <module>order</module>
         <module>goods</module>
+        <module>payment</module>
     </modules>
 
     <parent>

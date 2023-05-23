@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.zrj.payment.mapper.TOrderSnapshotMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.zrj.payment.entity.TOrderSnapshot">
+        <id column="order_id" property="orderId" />
+        <id column="order_type" property="orderType" />
+        <result column="mch_req_data" property="mchReqData" />
+        <result column="mch_req_time" property="mchReqTime" />
+        <result column="mch_resp_data" property="mchRespData" />
+        <result column="mch_resp_time" property="mchRespTime" />
+        <result column="channel_req_data" property="channelReqData" />
+        <result column="channel_req_time" property="channelReqTime" />
+        <result column="channel_resp_data" property="channelRespData" />
+        <result column="channel_resp_time" property="channelRespTime" />
+        <result column="created_at" property="createdAt" />
+        <result column="updated_at" property="updatedAt" />
+    </resultMap>
+
+</mapper>

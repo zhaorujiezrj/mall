@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.zrj.payment.mapper.TSysUserMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.zrj.payment.entity.TSysUser">
+        <id column="sys_user_id" property="sysUserId" />
+        <result column="login_username" property="loginUsername" />
+        <result column="realname" property="realname" />
+        <result column="telphone" property="telphone" />
+        <result column="sex" property="sex" />
+        <result column="avatar_url" property="avatarUrl" />
+        <result column="user_no" property="userNo" />
+        <result column="is_admin" property="isAdmin" />
+        <result column="state" property="state" />
+        <result column="sys_type" property="sysType" />
+        <result column="belong_info_id" property="belongInfoId" />
+        <result column="created_at" property="createdAt" />
+        <result column="updated_at" property="updatedAt" />
+    </resultMap>
+
+</mapper>
