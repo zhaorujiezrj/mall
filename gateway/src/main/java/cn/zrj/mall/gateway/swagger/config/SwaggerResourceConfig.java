@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.config.GatewayProperties;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.support.NameUtils;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import springfox.documentation.swagger.web.SwaggerResource;
 import springfox.documentation.swagger.web.SwaggerResourcesProvider;
@@ -18,7 +17,6 @@ import java.util.List;
  * @date 2022/9/21
  */
 @Component
-@Primary
 @RequiredArgsConstructor
 @Slf4j
 public class SwaggerResourceConfig implements SwaggerResourcesProvider {

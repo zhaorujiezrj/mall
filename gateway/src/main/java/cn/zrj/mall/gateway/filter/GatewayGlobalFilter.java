@@ -70,25 +70,21 @@ public class GatewayGlobalFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
         token = token.replaceAll("^[Bb]earer\\s+", "");
-        Boolean hasKey = redisTemplate.hasKey(RedisConstants.AUTH + token);
-        if (Boolean.FALSE.equals(hasKey)) {
-            return WebFluxUtils.writeResponse(response, ResultCode.TOKEN_ACCESS_FORBIDDEN);
-        }
         //对校验通过的token进行续期
         //调用认证服务对token进行判断，当有效期小于指定的时间，就对token进行续期
         if (properties.isEnabled()) {
             //由于在gateway网关注入feign会卡死，可以通过applicationContext获取feign的bean对象，但调用feign的接口要对应改成异步，否则无法调用
             // 具体调用方式WebClient.Builder
             // 这里的“lb”也可以换成http
-            String finalToken = token;
-            Mono<Object> mono = webClient.baseUrl("lb://auth").build().get().uri(uriBuilder ->
-                    uriBuilder.path("/oauth/refreshToken")
-                            .queryParam("accessToken", finalToken)
-                            .build())
-                    .header(HttpHeaders.AUTHORIZATION, token)
-                    .exchangeToMono(clientResponse -> clientResponse.bodyToMono(Object.class));
-            // 不调用subscribe或者block是不会调用服务的
-            mono.subscribe();
+//            String finalToken = token;
+//            Mono<Object> mono = webClient.baseUrl("lb://auth").build().get().uri(uriBuilder ->
+//                    uriBuilder.path("/oauth/refreshToken")
+//                            .queryParam("accessToken", finalToken)
+//                            .build())
+//                    .header(HttpHeaders.AUTHORIZATION, token)
+//                    .exchangeToMono(clientResponse -> clientResponse.bodyToMono(Object.class));
+//            // 不调用subscribe或者block是不会调用服务的
+//            mono.subscribe();
         }
         return chain.filter(exchange);
     }

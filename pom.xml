@@ -23,27 +23,28 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.0</version>
+        <version>3.1.0</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
     <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
 
-        <spring.cloud.version>2021.0.3</spring.cloud.version>
-        <spring.cloud.alibaba.version>2021.1</spring.cloud.alibaba.version>
+        <spring.cloud.version>2022.0.2</spring.cloud.version>
+        <spring.cloud.alibaba.version>2022.0.0.0-RC2</spring.cloud.alibaba.version>
         <mysql.version>8.0.30</mysql.version>
         <lomkok.version>1.18.24</lomkok.version>
-        <mybatis.plus.version>3.5.1</mybatis.plus.version>
-        <hutool.version>5.8.5</hutool.version>
-        <knife4j.version>2.0.9</knife4j.version>
-        <swagger.version>1.6.2</swagger.version>
+        <mybatis.plus.version>3.5.3.1</mybatis.plus.version>
+        <hutool.version>5.8.11</hutool.version>
+        <knife4j.version>3.0.3</knife4j.version>
+        <swagger.version>2.2.10</swagger.version>
         <weixin-java.version>4.1.5.B</weixin-java.version>
         <nimbus-jose-jwt.version>9.16.1</nimbus-jose-jwt.version>
         <rocketmq.version>2.2.2</rocketmq.version>
         <redisson.version>3.17.5</redisson.version>
         <alipay.version>4.33.26.ALL</alipay.version>
+        <authorization.version>1.1.0</authorization.version>
     </properties>
 
     <dependencies>
@@ -87,17 +88,34 @@
             <version>3.12.0</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/io.swagger.core.v3/swagger-annotations -->
+
         <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-annotations</artifactId>
-            <version>${swagger.version}</version>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-boot-starter</artifactId>
+            <version>3.0.0</version>
         </dependency>
+
+
 
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
             <artifactId>knife4j-spring-boot-starter</artifactId>
             <version>${knife4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-commons</artifactId>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.cloud</groupId>-->
+<!--            <artifactId>spring-cloud-openfeign-core</artifactId>-->
+<!--        </dependency>-->
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis-spring</artifactId>
+            <version>2.0.6</version>
+            <scope>compile</scope>
         </dependency>
 
     </dependencies>
@@ -178,6 +196,12 @@
                 <groupId>com.alipay.sdk</groupId>
                 <artifactId>alipay-sdk-java</artifactId>
                 <version>${alipay.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-oauth2-authorization-server</artifactId>
+                <version>${authorization.version}</version>
             </dependency>
 
 

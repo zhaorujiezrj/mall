@@ -12,8 +12,8 @@
     <artifactId>common-core</artifactId>
 
     <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
     <dependencies>
@@ -44,9 +44,6 @@
             <version>6.2.0.RELEASE</version>
         </dependency>
 
-
-
-
         <!-- JWT工具 -->
         <dependency>
             <groupId>com.nimbusds</groupId>
@@ -58,15 +55,6 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>io.github.openfeign</groupId>
-            <artifactId>feign-core</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.github.openfeign</groupId>
-            <artifactId>feign-httpclient</artifactId>
-        </dependency>
     </dependencies>
 
 </project>

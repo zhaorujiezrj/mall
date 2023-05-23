@@ -1,5 +1,6 @@
 package cn.zrj.mall.common.core.base;
 
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

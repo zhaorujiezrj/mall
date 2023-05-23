@@ -1,7 +1,7 @@
 package cn.zrj.mall.auth.security.userdetails.member;
 
 import cn.zrj.mall.auth.dto.MemberAuthDto;
-import cn.zrj.mall.auth.feign.MemberFeignClient;
+import cn.zrj.mall.auth.client.MemberClient;
 import cn.zrj.mall.common.core.result.Result;
 import cn.zrj.mall.common.core.result.ResultCode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ import java.util.Objects;
 public class MemberUserDetailsServiceImpl implements UserDetailsService {
 
     @Autowired
-    private MemberFeignClient memberFeignClient;
+    private MemberClient memberClient;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -36,7 +36,7 @@ public class MemberUserDetailsServiceImpl implements UserDetailsService {
      * @return
      */
     public UserDetails loadUserByOpenId(String openId) {
-        Result<MemberAuthDto> result = memberFeignClient.getMemberByOpenid(openId);
+        Result<MemberAuthDto> result = memberClient.getMemberByOpenid(openId);
         return getUserDetails(result);
     }
 
@@ -46,7 +46,7 @@ public class MemberUserDetailsServiceImpl implements UserDetailsService {
      * @return
      */
     public UserDetails loadUserByMobile(String mobile) {
-        Result<MemberAuthDto> result = memberFeignClient.getMemberByMobile(mobile);
+        Result<MemberAuthDto> result = memberClient.getMemberByMobile(mobile);
         return getUserDetails(result);
     }
 

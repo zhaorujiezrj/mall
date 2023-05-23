@@ -31,6 +31,13 @@ public class MemberUserDetails implements UserDetails, Serializable {
         this.setMobile(memberAuthInfoDto.getMobile());
     }
 
+    public MemberUserDetails(Long memberId, String username, Boolean enabled, String mobile) {
+        this.memberId = memberId;
+        this.username = username;
+        this.enabled = enabled;
+        this.mobile = mobile;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return new HashSet<>();

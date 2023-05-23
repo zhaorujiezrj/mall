@@ -1,19 +1,21 @@
-package cn.zrj.mall.auth.feign;
+package cn.zrj.mall.auth.client;
 
 import cn.zrj.mall.auth.dto.MemberAuthDto;
 import cn.zrj.mall.auth.dto.MemberDto;
 import cn.zrj.mall.common.core.result.Result;
-import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.service.annotation.GetExchange;
+import org.springframework.web.service.annotation.HttpExchange;
+import org.springframework.web.service.annotation.PutExchange;
 
 /**
  * @author zhaorujie
  * @date 2022/8/19
  */
-@FeignClient(value = "member")
-public interface MemberFeignClient {
+@HttpExchange(accept = "application/json", contentType = "application/json")
+public interface MemberClient {
 
-    @GetMapping("/app-api/v1/member/openid/{openid}")
+    @GetExchange("/app-api/v1/member/openid/{openid}")
     Result<MemberAuthDto> getMemberByOpenid(@PathVariable String openid);
 
     @GetMapping("/app-api/v1/member/mobile/{mobile}")
@@ -22,6 +24,6 @@ public interface MemberFeignClient {
     @PostMapping("/app-api/v1/member")
     Result<Void> addMember(@RequestBody MemberDto memberDto);
 
-    @PutMapping("/app-api/v1/member")
+    @PutExchange("/app-api/v1/member")
     Result<Void> updateMember(@RequestBody MemberDto memberDto);
 }

@@ -1,7 +1,7 @@
 package cn.zrj.mall.auth.security.userdetails.user;
 
 import cn.zrj.mall.auth.dto.AuthUserDto;
-import cn.zrj.mall.auth.feign.SysUserFeignClient;
+import cn.zrj.mall.auth.client.SysUserClient;
 import cn.zrj.mall.common.core.result.Result;
 import cn.zrj.mall.common.core.result.ResultCode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,11 +23,11 @@ import java.util.Objects;
 public class SysUserDetailsServiceImpl implements UserDetailsService {
 
     @Autowired
-    private SysUserFeignClient sysUserFeignClient;
+    private SysUserClient sysUserClient;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Result<AuthUserDto> result = sysUserFeignClient.getAuthInfoByUsername(username);
+        Result<AuthUserDto> result = sysUserClient.getAuthInfoByUsername(username);
         UserDetails userDetails = null;
         if (Result.isSuccess(result)) {
             AuthUserDto data = result.getData();

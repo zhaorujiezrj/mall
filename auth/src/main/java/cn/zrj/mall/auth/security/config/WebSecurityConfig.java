@@ -1,95 +1,62 @@
 package cn.zrj.mall.auth.security.config;
 
-import cn.binarywang.wx.miniapp.api.WxMaService;
-import cn.zrj.mall.auth.feign.MemberFeignClient;
-import cn.zrj.mall.auth.security.extension.mobile.SmsCodeAuthenticationProvider;
-import cn.zrj.mall.auth.security.extension.wechat.WeChatAuthenticationProvider;
-import cn.zrj.mall.auth.security.userdetails.member.MemberUserDetailsServiceImpl;
-import cn.zrj.mall.auth.security.userdetails.user.SysUserDetailsServiceImpl;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
+
+import java.io.IOException;
 
 /**
  * @author zhaorujie
  * @date 2022/8/22
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
-@RequiredArgsConstructor
-@Slf4j
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfig {
 
-    private final SysUserDetailsServiceImpl sysUserDetailsService;
-    private final MemberUserDetailsServiceImpl memberUserDetailsService;
-    private final MemberFeignClient memberFeignClient;
-    private final StringRedisTemplate redisTemplate;
-    private final WxMaService wxMaService;
-
-
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
-                .antMatchers("/oauth/**", "/sms/**").permitAll()
-                .antMatchers("/webjars/**", "/doc.html", "/swagger-resources/**", "/v2/api-docs").permitAll()
-                .anyRequest().authenticated()
-                .and()
-                .csrf().disable()
-                .httpBasic();
-    }
-
-
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.authenticationProvider(daoAuthenticationProvider())
-                .authenticationProvider(smsCodeAuthenticationProvider())
-                .authenticationProvider(weChatAuthenticationProvider())
-        ;
-    }
-
-    @Bean
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
-    }
-
-    @Bean
-    public DaoAuthenticationProvider daoAuthenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(sysUserDetailsService);
-        provider.setPasswordEncoder(passwordEncoder());
-        // 是否隐藏用户不存在异常，默认:true-隐藏；false-抛出异常；
-        provider.setHideUserNotFoundExceptions(false);
-        return provider;
-    }
-
-    @Bean
-    public SmsCodeAuthenticationProvider smsCodeAuthenticationProvider() {
-        return new SmsCodeAuthenticationProvider(memberFeignClient, redisTemplate, memberUserDetailsService);
-    }
-
-    @Bean
-    public WeChatAuthenticationProvider weChatAuthenticationProvider() {
-        return new WeChatAuthenticationProvider(wxMaService, redisTemplate, memberFeignClient, memberUserDetailsService);
-    }
     /**
-     * 密码编码器
-     * <p>
-     * 委托方式，根据密码的前缀选择对应的encoder，例如：{bcypt}前缀->标识BCYPT算法加密；{noop}->标识不使用任何加密即明文的方式
-     * 密码判读 DaoAuthenticationProvider#additionalAuthenticationChecks
+     * 这个也是个Spring Security的过滤器链，用于Spring Security的身份认证。
+     *
+     * @param http
+     * @return
+     * @throws Exception
      */
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    @Order(2)
+    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http)
+            throws Exception {
+        http
+                .authorizeHttpRequests(authorize -> authorize
+                        .anyRequest().authenticated()
+                )
+                // Form login handles the redirect to the login page from the
+                // authorization server filter chain
+                .formLogin(Customizer.withDefaults())
+        ;
+
+        return http.build();
     }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+
 }

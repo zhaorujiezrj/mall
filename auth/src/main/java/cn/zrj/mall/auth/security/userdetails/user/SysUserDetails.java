@@ -38,6 +38,12 @@ public class SysUserDetails implements UserDetails, Serializable {
         }
     }
 
+    public SysUserDetails(Long userId, String username, String password, Boolean enabled) {
+        this.username = username;
+        this.password = password;
+        this.enabled = enabled;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.authorities;

@@ -3,7 +3,9 @@ package cn.zrj.mall.common.core.exception;
 import cn.zrj.mall.common.core.result.Result;
 import cn.zrj.mall.common.core.result.ResultCode;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import feign.FeignException;
+import jakarta.servlet.ServletException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.TypeMismatchException;
@@ -19,9 +21,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
-import javax.servlet.ServletException;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
 import java.sql.SQLSyntaxErrorException;
 import java.util.concurrent.CompletionException;
 import java.util.regex.Matcher;
@@ -160,12 +159,6 @@ public class GlobalExceptionHandler {
         return Result.error(e.getLocalizedMessage());
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(FeignException.BadRequest.class)
-    public <T> Result<T> processException(FeignException.BadRequest e) {
-        log.info("微服务feign调用异常:{}", e.getMessage());
-        return Result.error(e.getMessage());
-    }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(BusinessException.class)

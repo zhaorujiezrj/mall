@@ -38,7 +38,7 @@ public class MybatisPlusGenerator {
                         .parent(scanner.apply("请输入包名？"))
                         .mapper("mapper")
                         .xml("mapper")
-                        .pathInfo(Collections.singletonMap(OutputFile.mapperXml, projectPath + "/" + modulePath.get() + "\\src\\main\\resources\\mapper"))
+                        .pathInfo(Collections.singletonMap(OutputFile.xml, projectPath + "/" + modulePath.get() + "\\src\\main\\resources\\mapper"))
                 )
                 // 策略配置
                 .strategyConfig((scanner, builder) ->

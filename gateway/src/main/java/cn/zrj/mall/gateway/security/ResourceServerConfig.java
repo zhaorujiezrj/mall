@@ -44,7 +44,6 @@ import java.security.spec.X509EncodedKeySpec;
 public class ResourceServerConfig {
 
     private final ResourceServerManager resourceServerManager;
-
     private final SecurityProperties properties;
 
     public ResourceServerConfig(ResourceServerManager resourceServerManager,
@@ -59,29 +58,27 @@ public class ResourceServerConfig {
             log.error("没有读取到配置文件中的白名单!");
         }
         http
-                .oauth2ResourceServer()
-                .jwt()
-                .jwtAuthenticationConverter(jwtAuthenticationConverter())
-                // 本地加载公钥
-                .publicKey(rsaPublicKey())
-        // 远程获取公钥，默认读取的key是spring.security.oauth2.resourceserver.jwt.jwk-set-uri
-        //.jwkSetUri()
-        ;
-        http.oauth2ResourceServer()
-                .authenticationEntryPoint(authenticationEntryPoint());
-        http.authorizeExchange()
-                .pathMatchers(Convert.toStrArray(properties.getIgnoreUrls())).permitAll()
-                .anyExchange().access(resourceServerManager)
-                .and()
-                .exceptionHandling()
-                // 处理未授权
-                .accessDeniedHandler(accessDeniedHandler())
-                //处理未认证
-                .authenticationEntryPoint(authenticationEntryPoint())
-                .and().csrf().disable();
+                .oauth2ResourceServer(server -> server
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())
+                                .publicKey(rsaPublicKey())
+                        )
+                        .authenticationEntryPoint(authenticationEntryPoint())
+                        .accessDeniedHandler(accessDeniedHandler()))
+                // 请求鉴权配置
+                .authorizeExchange(authorizeExchangeSpec ->
+                        authorizeExchangeSpec
+                                .pathMatchers(Convert.toStrArray(properties.getIgnoreUrls())).permitAll()
+                                .anyExchange().access(resourceServerManager)
+                )
+                .exceptionHandling(handle -> handle
+                        .authenticationEntryPoint(authenticationEntryPoint())
+                        .accessDeniedHandler(accessDeniedHandler()))
+                // 禁用csrf token安全校验
+                .csrf(ServerHttpSecurity.CsrfSpec::disable);
 
         return http.build();
     }
+
 
     /**
      * 自定义未授权响应
@@ -117,6 +114,7 @@ public class ResourceServerConfig {
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
         return new ReactiveJwtAuthenticationConverterAdapter(jwtAuthenticationConverter);
     }
+
 
     /**
      * 公钥解密

@@ -47,13 +47,14 @@ spring:
           filters:
             - StripPrefix=1
 
-  redis:
-    database: 1
-    host: 127.0.0.1
-    port: 6379
 
   main:
     allow-bean-definition-overriding: true
+  data:
+    redis:
+      database: 1
+      host: 127.0.0.1
+      port: 6379
 
 security:
   enabled: true
@@ -67,7 +68,7 @@ security:
     - /*/v2/api-docs
 
     # oauth2
-    - /auth/oauth/**
+    - /oauth2/**
     - /admin/sms/**
 
 
