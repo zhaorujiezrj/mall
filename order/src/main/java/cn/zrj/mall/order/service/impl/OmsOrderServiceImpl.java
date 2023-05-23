@@ -14,7 +14,7 @@ import cn.zrj.mall.order.enums.OrderStatusEnum;
 import cn.zrj.mall.order.pay.enums.PayOrgType;
 import cn.zrj.mall.order.pay.result.AlipayNotifyResponse;
 import cn.zrj.mall.order.pay.enums.PayTypeEnum;
-import cn.zrj.mall.order.feign.MemberFeignClient;
+import cn.zrj.mall.order.client.MemberClient;
 import cn.zrj.mall.order.mapper.OmsOrderMapper;
 import cn.zrj.mall.order.service.OmsOrderService;
 import cn.zrj.mall.order.util.RocketMQUtils;
@@ -23,6 +23,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyV3Result;
 import com.github.binarywang.wxpay.bean.notify.WxPayRefundNotifyV3Result;
 import com.github.binarywang.wxpay.constant.WxPayConstants;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.producer.SendResult;
@@ -34,7 +35,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -61,7 +61,7 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderMapper, OmsOrder> i
     @Autowired
     private RedissonClient redissonClient;
     @Autowired
-    private MemberFeignClient memberFeignClient;
+    private MemberClient memberClient;
 //    @Autowired
 //    private PayService payService;
 
@@ -116,7 +116,7 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderMapper, OmsOrder> i
 
         String openid = null;
         if (Objects.equals(payTypeEnum, PayTypeEnum.WX_JSAPI)) {
-            openid = memberFeignClient.getOpenidById(memberId).getData();
+            openid = memberClient.getOpenidById(memberId).getData();
         }
         return map.get(payTypeEnum.getPayOrgType()).pay(oldOutTradeNo, outTradeNo, omsOrder.getPayAmount(), "赅买-订单编号" + omsOrder.getOrderSn(), openid, payTypeEnum);
     }

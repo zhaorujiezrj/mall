@@ -2,9 +2,9 @@ package cn.zrj.mall.order.pay.core;
 
 import cn.zrj.mall.order.pay.enums.PayOrgType;
 import cn.zrj.mall.order.pay.enums.PayTypeEnum;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author zhaorujie
