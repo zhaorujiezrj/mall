@@ -1,6 +1,7 @@
 package cn.zrj.mall.admin.pojo.dto;
 
-import io.swagger.annotations.ApiModelProperty;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.List;
@@ -12,18 +13,18 @@ import java.util.List;
 @Data
 public class UserUpdateDto {
 
-    @ApiModelProperty(value = "主键")
+    @Schema(description = "主键")
     private Long id;
 
-    @ApiModelProperty(value = "姓名")
+    @Schema(description = "姓名")
     private String nickname;
 
-    @ApiModelProperty(value = "手机号")
+    @Schema(description = "手机号")
     private String mobile;
 
-    @ApiModelProperty(value = "状态(1:正常;0:禁用)")
+    @Schema(description = "状态(1:正常;0:禁用)")
     private Integer status;
 
-    @ApiModelProperty(value = "角色id数组")
+    @Schema(description = "角色id数组")
     private List<Long> roleIds;
 }

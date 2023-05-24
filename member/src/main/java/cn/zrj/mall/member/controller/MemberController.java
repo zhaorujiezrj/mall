@@ -6,9 +6,9 @@ import cn.zrj.mall.member.dto.MemberAuthDto;
 import cn.zrj.mall.member.dto.MemberDto;
 import cn.zrj.mall.member.entity.UmsMember;
 import cn.zrj.mall.member.service.UmsMemberService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +18,7 @@ import java.util.Optional;
  * @author zhaorujie
  * @date 2022/8/19
  */
-@Api(tags = "APP-会员管理")
+@Tag(name = "APP-会员管理")
 @RestController
 @RequestMapping("/app-api/v1/member")
 public class MemberController {
@@ -26,9 +26,9 @@ public class MemberController {
     @Autowired
     private UmsMemberService memberService;
 
-    @ApiOperation(value = "根据 openid 获取会员认证信息")
+    @Operation(summary = "根据 openid 获取会员认证信息")
     @GetMapping("/openid/{openid}")
-    public Result<MemberAuthDto> getMemberByOpenid(@ApiParam("微信身份标识") @PathVariable String openid) {
+    public Result<MemberAuthDto> getMemberByOpenid(@Parameter(ref = "微信身份标识") @PathVariable String openid) {
         MemberAuthDto memberAuthInfo = memberService.getMemberByOpenid(openid);
         return Result.success(memberAuthInfo);
     }
@@ -40,7 +40,7 @@ public class MemberController {
      * @return
      */
     @GetMapping("/mobile/{mobile}")
-    public Result<MemberAuthDto> getMemberByMobile(@ApiParam("手机号码") @PathVariable String mobile) {
+    public Result<MemberAuthDto> getMemberByMobile(@Parameter(ref = "手机号码") @PathVariable String mobile) {
         MemberAuthDto memberAuthInfo = memberService.getByMobile(mobile);
         return Result.success(memberAuthInfo);
     }

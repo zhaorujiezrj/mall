@@ -3,7 +3,8 @@ package cn.zrj.mall.admin.entity;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.annotations.ApiModelProperty;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -35,7 +36,7 @@ public class SysUser {
 
     private Long deptId;
 
-    @ApiModelProperty("逻辑删除标识： 0-未删除 1-已删除")
+    @Schema(description = "逻辑删除标识： 0-未删除 1-已删除")
     @TableLogic(value = "0", delval = "1")
     private Integer deleted;
 

@@ -1,7 +1,8 @@
 package cn.zrj.mall.admin.pojo.query;
 
 import cn.zrj.mall.common.core.base.BasePageQuery;
-import io.swagger.annotations.ApiModelProperty;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -11,16 +12,16 @@ import lombok.Data;
 @Data
 public class UserPageQuery extends BasePageQuery {
 
-    @ApiModelProperty(value = "登录账号")
+    @Schema(description = "登录账号")
     private String username;
 
-    @ApiModelProperty(value = "用户名称")
+    @Schema(description = "用户名称")
     private String nickname;
 
-    @ApiModelProperty(value = "手机号")
+    @Schema(description = "手机号")
     private String mobile;
 
-    @ApiModelProperty(value = "状态（1:正常;0:禁用）")
+    @Schema(description = "状态（1:正常;0:禁用）")
     private Integer status;
 
 }

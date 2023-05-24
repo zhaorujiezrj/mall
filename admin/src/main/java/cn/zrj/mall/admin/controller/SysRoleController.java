@@ -6,11 +6,11 @@ import cn.zrj.mall.admin.pojo.vo.role.RoleVo;
 import cn.zrj.mall.admin.service.SysRoleService;
 import cn.zrj.mall.common.core.result.Result;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 /**
  * <p>
@@ -27,25 +27,25 @@ public class SysRoleController {
 
     private final SysRoleService sysRoleService;
 
-    @ApiOperation(value = "分页查询")
+    @Operation(summary = "分页查询")
     @GetMapping("/pages")
     public Result<IPage<RoleVo>> getRolePages(RolePageQuery query) {
         return Result.success(sysRoleService.getRolePages(query));
     }
 
-    @ApiOperation(value = "添加角色")
+    @Operation(summary = "添加角色")
     @PostMapping
     public Result<Boolean> add(@Valid @RequestBody RoleDto roleDto) {
         return Result.success(sysRoleService.save(null, roleDto));
     }
 
-    @ApiOperation(value = "修改角色")
+    @Operation(summary = "修改角色")
     @PutMapping("/{id}")
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody RoleDto roleDto) {
         return Result.success(sysRoleService.save(id, roleDto));
     }
 
-    @ApiOperation(value = "删除角色")
+    @Operation(summary = "删除角色")
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
         return Result.success(sysRoleService.deleteById(id));

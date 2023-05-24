@@ -6,20 +6,20 @@ import cn.zrj.mall.order.service.OmsOrderService;
 import cn.zrj.mall.order.util.RocketMQUtils;
 import cn.zrj.mall.order.vo.WxPayNotifyResponseVo;
 import com.github.binarywang.wxpay.constant.WxPayConstants;
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.client.producer.SendStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * @author zhaorujie
  * @date 2022/9/2
  */
-@Api(tags = "微信支付回调通知")
+@Tag(name = "微信支付回调通知")
 @RestController
 @RequestMapping("/app-api/v1/wx-pay/callback")
 @Slf4j
@@ -37,7 +37,7 @@ public class WxPayCallbackController {
      * @param headers    请求头
      * @return {"code": "SUCCESS", "message": "成功"}
      */
-    @ApiIgnore
+    @Hidden
     @PostMapping("order/pay/notify/v3")
     public WxPayNotifyResponseVo wxPayCallbackNotify(@RequestBody String notifyData,
                                                      @RequestHeader HttpHeaders headers) {
@@ -60,7 +60,7 @@ public class WxPayCallbackController {
      * @param headers    请求头
      * @return {"code": "SUCCESS", "message": "成功"}
      */
-    @ApiIgnore
+    @Hidden
     @PostMapping("order/refund/notify/v3")
     public WxPayNotifyResponseVo wxRefundCallbackNotify(@RequestBody String notifyData,
                                                           @RequestHeader HttpHeaders headers) {
@@ -84,7 +84,7 @@ public class WxPayCallbackController {
      * @param headers    请求头
      * @return {"code": "SUCCESS", "message": "成功"}
      */
-    @ApiIgnore
+    @Hidden
     @PostMapping("order/pay/notify/v3/mq")
     public WxPayNotifyResponseVo wxPayNotifyCallbackMQ(@RequestBody String notifyData,
                                                      @RequestHeader HttpHeaders headers) throws Exception {
@@ -98,7 +98,7 @@ public class WxPayCallbackController {
      * @param headers    请求头
      * @return {"code": "SUCCESS", "message": "成功"}
      */
-    @ApiIgnore
+    @Hidden
     @PostMapping("order/refund/notify/v3/mq")
     public WxPayNotifyResponseVo wxRefundNotifyCallbackMQ(@RequestBody String notifyData,
                                                         @RequestHeader HttpHeaders headers) throws Exception {
