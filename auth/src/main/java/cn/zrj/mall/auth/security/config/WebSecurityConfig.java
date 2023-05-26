@@ -44,6 +44,9 @@ public class WebSecurityConfig {
             throws Exception {
         http
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/webjars/**","/doc.html",
+                                "/swagger-resources/**", "/*/v3/api-docs",
+                                "/favicon.ico").permitAll()
                         .anyRequest().authenticated()
                 )
                 // Form login handles the redirect to the login page from the

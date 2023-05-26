@@ -47,9 +47,15 @@ wechat:
   appId: wx21a0fd49d51ea49a
   secret: 4405446a86752a6a1bdd099afd8e6888
 
-# Feign 配置
-feign:
-  httpclient:
-    enabled: true
-  okhttp:
-    enabled: false
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+    show-extensions: true
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: '认证服务'
+      paths-to-match: '/**'
+  default-flat-param-object: false

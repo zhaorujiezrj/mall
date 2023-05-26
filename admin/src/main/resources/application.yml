@@ -42,9 +42,17 @@ mybatis-plus:
     map-underscore-to-camel-case: true
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
-# Feign 配置
-feign:
-  httpclient:
-    enabled: true
-  okhttp:
-    enabled: false
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+    show-extensions: true
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: '系统服务'
+      paths-to-match: '/**'
+      packages-to-scan: cn.zrj.mall.admin.controller
+  default-flat-param-object: false

@@ -65,11 +65,32 @@ security:
     - /webjars/**
     - /doc.html
     - /swagger-resources/**
-    - /*/v2/api-docs
+    - /*/v3/api-docs
+    - /favicon.ico
 
     # oauth2
     - /oauth2/**
     - /admin/sms/**
+
+knife4j:
+  # 聚合swagger文档
+  gateway:
+    enable: true
+    routes:
+#      - name: 认证服务
+#        # OpenAPI数据源，不管是Swagger/OAS3，提供地址即可聚合
+#        url: /auth/v3/api-docs?group=系统服务
+#        service-name: auth
+#        order: 2
+      - name: 系统服务
+        url: /admin/v3/api-docs?group=系统服务
+        service-name: admin
+        order: 3
+      - name: 会员服务
+        url: /member/v3/api-docs?group=会员服务
+        service-name: member
+        order: 4
+
 
 
 
