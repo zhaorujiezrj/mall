@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cn.zrj.mall</groupId>
-    <artifactId>mall-test</artifactId>
+    <artifactId>mall</artifactId>
     <packaging>pom</packaging>
     <version>2022</version>
 
