@@ -1,7 +1,7 @@
-# mall-test Spring Cloud Alibaba 架构
+# mall Spring Cloud Alibaba 架构
 
 #### 介绍
-**mall-test 使用的是SpringBoot3、JDK17，auth模块整合最新版的Spring Authorization Server，并扩展了密码模式、手机验证码模式和微信小程序登录模式**
+**mall 使用的是SpringBoot3、JDK17，auth模块整合最新版的Spring Authorization Server，并扩展了密码模式、手机验证码模式和微信小程序登录模式**
 
 #### 软件架构
 1、SpringBoot 3
