@@ -1,18 +1,25 @@
-package cn.zrj.mall.auth.security.extension.mobile;
+package cn.zrj.mall.auth.security.extension.wechat;
 
+import cn.binarywang.wx.miniapp.api.WxMaService;
+import cn.binarywang.wx.miniapp.bean.WxMaJscode2SessionResult;
+import cn.binarywang.wx.miniapp.bean.WxMaPhoneNumberInfo;
+import cn.zrj.mall.auth.dto.MemberAuthDto;
+import cn.zrj.mall.auth.dto.MemberDto;
+import cn.zrj.mall.auth.client.MemberClient;
 import cn.zrj.mall.auth.security.OAuth2GrantType;
 import cn.zrj.mall.auth.security.OAuth2ParamsNames;
-import cn.zrj.mall.auth.security.userdetails.member.MemberUserDetails;
+import cn.zrj.mall.auth.security.extension.mobile.SmsCodeAuthenticationToken;
 import cn.zrj.mall.auth.security.userdetails.member.MemberUserDetailsServiceImpl;
 import cn.zrj.mall.auth.security.utils.OAuth2AuthenticationProviderUtils;
+import cn.zrj.mall.common.core.exception.BusinessException;
+import cn.zrj.mall.common.core.result.Result;
 import lombok.extern.slf4j.Slf4j;
+import me.chanjar.weixin.common.error.WxErrorException;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.*;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
@@ -30,9 +37,6 @@ import org.springframework.security.oauth2.server.authorization.token.OAuth2Toke
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenGenerator;
 import org.springframework.util.Assert;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 /**
@@ -40,33 +44,33 @@ import java.util.*;
  * @date 2022/8/22
  */
 @Slf4j
-public class OAuth2SmsCodeAuthenticationProvider implements AuthenticationProvider {
+public class WeChatAuthenticationProvider implements AuthenticationProvider {
 
     private static final String ERROR_URI = "https://datatracker.ietf.org/doc/html/rfc6749#section-5.2";
     private final OAuth2AuthorizationService authorizationService;
     private final OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator;
-    private final AuthenticationManager authenticationManager;
-
     private final MemberUserDetailsServiceImpl memberUserDetailsService;
+    private static final OAuth2TokenType ID_TOKEN_TOKEN_TYPE = new OAuth2TokenType(OidcParameterNames.ID_TOKEN);
+    private final WxMaService wxMaService;
+    private final MemberClient memberClient;
 
-    private static final OAuth2TokenType ID_TOKEN_TOKEN_TYPE =
-            new OAuth2TokenType(OidcParameterNames.ID_TOKEN);
-    private SessionRegistry sessionRegistry;
-
-    public OAuth2SmsCodeAuthenticationProvider(OAuth2AuthorizationService authorizationService,
-                                               OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator,
-                                               AuthenticationManager authenticationManager, MemberUserDetailsServiceImpl memberUserDetailsService) {
+    public WeChatAuthenticationProvider(OAuth2AuthorizationService authorizationService,
+                                        OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator,
+                                        MemberUserDetailsServiceImpl memberUserDetailsService,
+                                        WxMaService wxMaService,
+                                        MemberClient memberClient) {
         Assert.notNull(authorizationService, "authorizationService cannot be null");
         Assert.notNull(tokenGenerator, "tokenGenerator cannot be null");
         this.authorizationService = authorizationService;
         this.tokenGenerator = tokenGenerator;
-        this.authenticationManager = authenticationManager;
         this.memberUserDetailsService = memberUserDetailsService;
+        this.wxMaService = wxMaService;
+        this.memberClient = memberClient;
     }
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        OAuth2SmsCodeAuthenticationToken smsAuthenticationToken = (OAuth2SmsCodeAuthenticationToken) authentication;
+        WeChatAuthenticationToken weChatAuthenticationToken = (WeChatAuthenticationToken) authentication;
 
         OAuth2ClientAuthenticationToken clientPrincipal = OAuth2AuthenticationProviderUtils.getAuthenticatedClientElseThrowInvalidClient(authentication);
         RegisteredClient registeredClient = clientPrincipal.getRegisteredClient();
@@ -76,25 +80,59 @@ public class OAuth2SmsCodeAuthenticationProvider implements AuthenticationProvid
         if (!registeredClient.getAuthorizationGrantTypes().contains(OAuth2GrantType.SMS_CODE)) {
             throw new OAuth2AuthenticationException("unauthorized_client");
         }
-        String mobile = smsAuthenticationToken.getMobile();
-        String code = smsAuthenticationToken.getCode();
-        log.info("手机号验证码登录信息【mobile = {}, code = {}】", mobile, code);
 
-//        SmsCodeAuthenticationToken principal = new SmsCodeAuthenticationToken(userDetails, authentication.getCredentials(), new HashSet<>());
-//        result.setDetails(authentication.getDetails());
-        MemberUserDetails userDetails = (MemberUserDetails) memberUserDetailsService.loadUserByMobile(mobile);
-        smsAuthenticationToken.setDetails(userDetails);
-        Authentication principal = smsAuthenticationToken;
+        String code = weChatAuthenticationToken.getCode();
+        String encryptedData = weChatAuthenticationToken.getEncryptedData();
+        String iv = weChatAuthenticationToken.getIv();
+        String openid;
+        try {
+            WxMaJscode2SessionResult sessionInfo = wxMaService.getUserService().getSessionInfo(code);
+            String sessionKey = sessionInfo.getSessionKey();
+            openid = sessionInfo.getOpenid();
+            String unionId = sessionInfo.getUnionid();
+            log.info("微信小程序用户认证信息【sessionKey = {}，openid = {}， unionId = {}】", sessionKey, openid, unionId);
+
+            WxMaPhoneNumberInfo phoneNoInfo = wxMaService.getUserService().getPhoneNoInfo(sessionKey, encryptedData, iv);
+            String phoneNumber = phoneNoInfo.getPhoneNumber();
+
+            log.info("微信小程序用户手机号解密【phoneNumber = {}，countryCode = {}】", phoneNumber, phoneNoInfo.getCountryCode());
+            Result<MemberAuthDto> memberResult = memberClient.getMemberByMobile(phoneNumber);
+            if (!Result.isSuccess(memberResult)) {
+                throw new BusinessException("获取用户信息失败!");
+            }
+            MemberAuthDto data = memberResult.getData();
+            //不存在则注册会员
+            if (Objects.isNull(data)) {
+                MemberDto memberDto = new MemberDto();
+                memberDto.setOpenid(openid);
+                memberDto.setMobile(phoneNumber);
+                memberDto.setSessionKey(sessionKey);
+                memberClient.addMember(memberDto);
+            } else {
+                MemberDto memberDto = new MemberDto();
+                memberDto.setId(data.getMemberId());
+                memberDto.setOpenid(openid);
+                memberDto.setMobile(phoneNumber);
+                memberDto.setSessionKey(sessionKey);
+                memberClient.updateMember(memberDto);
+            }
+        } catch (WxErrorException e) {
+            log.error("微信小程序用户认证失败，原因：{}", e);
+            throw new BusinessException("登录失败，原因：" + e.getMessage());
+        }
+        UserDetails userDetails = memberUserDetailsService.loadUserByOpenId(openid);
+        weChatAuthenticationToken.setDetails(userDetails);
+        final Authentication principal = weChatAuthenticationToken;
 
         // Default to configured scopes
         Set<String> authorizedScopes = registeredClient.getScopes();
-        if (CollectionUtils.isNotEmpty(smsAuthenticationToken.getScopes())) {
-            for (String requestedScope : smsAuthenticationToken.getScopes()) {
+        if (CollectionUtils.isNotEmpty(weChatAuthenticationToken.getScopes())) {
+            for (String requestedScope : weChatAuthenticationToken.getScopes()) {
                 if (!registeredClient.getScopes().contains(requestedScope)) {
                     throw new OAuth2AuthenticationException(OAuth2ErrorCodes.INVALID_SCOPE);
                 }
             }
-            authorizedScopes = new LinkedHashSet<>(smsAuthenticationToken.getScopes());
+            authorizedScopes = new LinkedHashSet<>(weChatAuthenticationToken.getScopes());
         }
 
         // @formatter:off
@@ -105,7 +143,7 @@ public class OAuth2SmsCodeAuthenticationProvider implements AuthenticationProvid
 //                .authorization(authorization)
                 .authorizedScopes(authorizedScopes)
                 .authorizationGrantType(OAuth2GrantType.SMS_CODE)
-                .authorizationGrant(smsAuthenticationToken);
+                .authorizationGrant(weChatAuthenticationToken);
         // @formatter:on
 
         OAuth2Authorization.Builder authorizationBuilder = OAuth2Authorization.withRegisteredClient(registeredClient)
@@ -153,7 +191,6 @@ public class OAuth2SmsCodeAuthenticationProvider implements AuthenticationProvid
         // ----- ID token -----
         OidcIdToken idToken;
         if (authorizedScopes.contains(OidcScopes.OPENID)) {
-
             // @formatter:off
             tokenContext = tokenContextBuilder
                     .tokenType(ID_TOKEN_TOKEN_TYPE)
@@ -191,6 +228,6 @@ public class OAuth2SmsCodeAuthenticationProvider implements AuthenticationProvid
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return OAuth2SmsCodeAuthenticationToken.class.isAssignableFrom(authentication);
+        return SmsCodeAuthenticationToken.class.isAssignableFrom(authentication);
     }
 }

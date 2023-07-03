@@ -28,9 +28,9 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 
-public class OAuth2UsernamePasswordAuthenticationProvider implements AuthenticationProvider {
+public class UsernamePasswordAuthenticationProvider implements AuthenticationProvider {
 
-    private static final Logger log = LoggerFactory.getLogger(OAuth2UsernamePasswordAuthenticationProvider.class);
+    private static final Logger log = LoggerFactory.getLogger(UsernamePasswordAuthenticationProvider.class);
 
     private static final String ERROR_URI = "https://datatracker.ietf.org/doc/html/rfc6749#section-5.2";
 
@@ -47,9 +47,9 @@ public class OAuth2UsernamePasswordAuthenticationProvider implements Authenticat
      * @param authorizationService the authorization service
      * @param tokenGenerator – the token generator
      */
-    public OAuth2UsernamePasswordAuthenticationProvider(OAuth2AuthorizationService authorizationService,
-                                                        OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator,
-                                                        AuthenticationManager authenticationManager) {
+    public UsernamePasswordAuthenticationProvider(OAuth2AuthorizationService authorizationService,
+                                                  OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator,
+                                                  AuthenticationManager authenticationManager) {
         Assert.notNull(authorizationService, "authorizationService cannot be null");
         Assert.notNull(tokenGenerator, "tokenGenerator cannot be null");
         this.authorizationService = authorizationService;
@@ -59,8 +59,8 @@ public class OAuth2UsernamePasswordAuthenticationProvider implements Authenticat
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        OAuth2UsernamePasswordAuthenticationToken resourceOwnerPasswordAuthentication =
-                (OAuth2UsernamePasswordAuthenticationToken) authentication;
+        UsernamePasswordAuthenticationToken resourceOwnerPasswordAuthentication =
+                (UsernamePasswordAuthenticationToken) authentication;
 
         OAuth2ClientAuthenticationToken clientPrincipal =
                 OAuth2AuthenticationProviderUtils.getAuthenticatedClientElseThrowInvalidClient(resourceOwnerPasswordAuthentication);
@@ -74,9 +74,9 @@ public class OAuth2UsernamePasswordAuthenticationProvider implements Authenticat
         String password = resourceOwnerPasswordAuthentication.getPassword();
 
         Authentication usernamePasswordAuthentication = null;
-        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken;
+        org.springframework.security.authentication.UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken;
         try {
-            usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(username, password);
+            usernamePasswordAuthenticationToken = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(username, password);
             usernamePasswordAuthentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
 
             log.debug("Resource Owner Password username and password authenticate success ：[{}]", usernamePasswordAuthentication);
@@ -192,6 +192,6 @@ public class OAuth2UsernamePasswordAuthenticationProvider implements Authenticat
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return OAuth2UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
+        return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
     }
 }

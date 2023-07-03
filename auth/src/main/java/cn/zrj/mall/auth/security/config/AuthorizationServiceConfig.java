@@ -4,13 +4,14 @@ import cn.binarywang.wx.miniapp.api.WxMaService;
 import cn.hutool.core.codec.Base64;
 import cn.hutool.core.io.IoUtil;
 import cn.zrj.mall.auth.client.MemberClient;
-import cn.zrj.mall.auth.security.extension.mobile.OAuth2SmsCodeAuthenticationConverter;
-import cn.zrj.mall.auth.security.extension.mobile.OAuth2SmsCodeAuthenticationProvider;
-import cn.zrj.mall.auth.security.extension.mobile.OAuth2SmsCodeAuthenticationToken;
-import cn.zrj.mall.auth.security.extension.password.OAuth2UsernamePasswordAuthenticationConverter;
-import cn.zrj.mall.auth.security.extension.password.OAuth2UsernamePasswordAuthenticationProvider;
-import cn.zrj.mall.auth.security.extension.wechat.OAuth2WeCahtAuthenticationProvider;
-import cn.zrj.mall.auth.security.extension.wechat.OAuth2WeChatAuthenticationConverter;
+import cn.zrj.mall.auth.security.extension.captcha.CaptchaAuthenticationProvider;
+import cn.zrj.mall.auth.security.extension.mobile.SmsCodeAuthenticationConverter;
+import cn.zrj.mall.auth.security.extension.mobile.SmsCodeAuthenticationProvider;
+import cn.zrj.mall.auth.security.extension.mobile.SmsCodeAuthenticationToken;
+import cn.zrj.mall.auth.security.extension.password.UsernamePasswordAuthenticationConverter;
+import cn.zrj.mall.auth.security.extension.password.UsernamePasswordAuthenticationProvider;
+import cn.zrj.mall.auth.security.extension.wechat.WeChatAuthenticationProvider;
+import cn.zrj.mall.auth.security.extension.wechat.WeChatAuthenticationConverter;
 import cn.zrj.mall.auth.security.extension.deserializer.MemberUserDetailsAuthenticationTokenMixin;
 import cn.zrj.mall.auth.security.extension.deserializer.SysUserDetailsAuthenticationTokenMixin;
 import cn.zrj.mall.auth.security.userdetails.member.MemberUserDetails;
@@ -63,6 +64,8 @@ import org.springframework.security.oauth2.server.authorization.web.authenticati
 import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2AuthorizationCodeAuthenticationConverter;
 import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2ClientCredentialsAuthenticationConverter;
 import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2RefreshTokenAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.rsa.crypto.KeyStoreKeyFactory;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
@@ -133,13 +136,13 @@ public class AuthorizationServiceConfig {
                             new OAuth2AuthorizationCodeAuthenticationConverter(),
                             new OAuth2RefreshTokenAuthenticationConverter(),
                             new OAuth2ClientCredentialsAuthenticationConverter(),
-                            new OAuth2UsernamePasswordAuthenticationConverter(),
-                            new OAuth2SmsCodeAuthenticationConverter(),
-                            new OAuth2WeChatAuthenticationConverter()));
+                            new UsernamePasswordAuthenticationConverter(),
+                            new SmsCodeAuthenticationConverter(),
+                            new WeChatAuthenticationConverter()));
             endpoint.accessTokenRequestConverter(authenticationConverter);
         });
 
-//        http.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
+        http.oauth2ResourceServer(resourceServer -> resourceServer.jwt(Customizer.withDefaults()));
 
         RequestMatcher endpointsMatcher = authorizationServerConfigurer
                 .getEndpointsMatcher();
@@ -180,12 +183,14 @@ public class AuthorizationServiceConfig {
         OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator = OAuth2ConfigurerUtils.getTokenGenerator(http);
 
         http.authenticationProvider(daoAuthenticationProvider());
-        http.authenticationProvider(new OAuth2SmsCodeAuthenticationProvider(authorizationService, tokenGenerator,
+        http.authenticationProvider(new SmsCodeAuthenticationProvider(authorizationService, tokenGenerator,
                 authenticationManager, memberUserDetailsService));
-        http.authenticationProvider(new OAuth2UsernamePasswordAuthenticationProvider(authorizationService, tokenGenerator,
+        http.authenticationProvider(new UsernamePasswordAuthenticationProvider(authorizationService, tokenGenerator,
                 authenticationManager));
-        http.authenticationProvider(new OAuth2WeCahtAuthenticationProvider(authorizationService, tokenGenerator,
+        http.authenticationProvider(new WeChatAuthenticationProvider(authorizationService, tokenGenerator,
                 memberUserDetailsService, wxMaService, memberClient));
+
+        http.authenticationProvider(new CaptchaAuthenticationProvider(sysUserDetailsService, passwordEncoder()));
 
         return http.build();
     }
@@ -231,7 +236,7 @@ public class AuthorizationServiceConfig {
         List<Module> securityModules = SecurityJackson2Modules.getModules(classLoader);
         objectMapper.registerModules(securityModules);
         objectMapper.registerModule(new OAuth2AuthorizationServerJackson2Module());
-        objectMapper.addMixIn(OAuth2SmsCodeAuthenticationToken.class, MemberUserDetailsAuthenticationTokenMixin.class);
+        objectMapper.addMixIn(SmsCodeAuthenticationToken.class, MemberUserDetailsAuthenticationTokenMixin.class);
         objectMapper.addMixIn(UsernamePasswordAuthenticationToken.class, SysUserDetailsAuthenticationTokenMixin.class);
         authorizationRowMapper.setObjectMapper(objectMapper);
 
@@ -334,7 +339,7 @@ public class AuthorizationServiceConfig {
             if (principal instanceof UsernamePasswordAuthenticationToken) {
                 SysUserDetails sysUserDetails = (SysUserDetails) principal.getPrincipal();
                 claims.claim("username", sysUserDetails.getUsername());
-            } else if (principal instanceof OAuth2SmsCodeAuthenticationToken) {
+            } else if (principal instanceof SmsCodeAuthenticationToken) {
                 MemberUserDetails memberUserDetails = (MemberUserDetails) principal.getDetails();
                 claims.claim("username", memberUserDetails.getUsername());
                 claims.claim("mobile", memberUserDetails.getMobile());
@@ -347,5 +352,23 @@ public class AuthorizationServiceConfig {
 //                log.info("id_tokens");
 //            }
         };
+    }
+
+    /**
+     * 自定义jwt解析器，设置解析出来的权限信息的前缀与在jwt中的key
+     *
+     * @return jwt解析器 JwtAuthenticationConverter
+     */
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        // 设置解析权限信息的前缀，设置为空是去掉前缀
+        grantedAuthoritiesConverter.setAuthorityPrefix("");
+        // 设置权限信息在jwt claims中的key
+        grantedAuthoritiesConverter.setAuthoritiesClaimName("authorities");
+
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+        return jwtAuthenticationConverter;
     }
 }

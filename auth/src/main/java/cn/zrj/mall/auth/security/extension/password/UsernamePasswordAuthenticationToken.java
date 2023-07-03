@@ -12,17 +12,17 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class OAuth2UsernamePasswordAuthenticationToken extends OAuth2AuthorizationGrantAuthenticationToken {
+public class UsernamePasswordAuthenticationToken extends OAuth2AuthorizationGrantAuthenticationToken {
 
     private final Set<String> scopes;
     private final String username;
     private final String password;
 
-    public OAuth2UsernamePasswordAuthenticationToken(Authentication clientPrincipal,
-                                                     @Nullable Set<String> scopes,
-                                                     @Nullable Map<String, Object> additionalParameters,
-                                                     @Nullable String username,
-                                                     @Nullable String password) {
+    public UsernamePasswordAuthenticationToken(Authentication clientPrincipal,
+                                               @Nullable Set<String> scopes,
+                                               @Nullable Map<String, Object> additionalParameters,
+                                               @Nullable String username,
+                                               @Nullable String password) {
         super(AuthorizationGrantType.PASSWORD, clientPrincipal, additionalParameters);
         Assert.notNull(clientPrincipal, "clientPrincipal cannot be null");
         this.scopes = Collections.unmodifiableSet(CollectionUtils.isNotEmpty(scopes) ? new HashSet<>(scopes) : Collections.emptySet());

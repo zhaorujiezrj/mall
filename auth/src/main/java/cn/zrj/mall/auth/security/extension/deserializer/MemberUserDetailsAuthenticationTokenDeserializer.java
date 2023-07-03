@@ -1,7 +1,7 @@
 package cn.zrj.mall.auth.security.extension.deserializer;
 
 
-import cn.zrj.mall.auth.security.extension.mobile.OAuth2SmsCodeAuthenticationToken;
+import cn.zrj.mall.auth.security.extension.mobile.SmsCodeAuthenticationToken;
 import cn.zrj.mall.auth.security.userdetails.member.MemberUserDetails;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * @author zhaorujie
  */
-public class MemberUserDetailsAuthenticationTokenDeserializer extends JsonDeserializer<OAuth2SmsCodeAuthenticationToken> {
+public class MemberUserDetailsAuthenticationTokenDeserializer extends JsonDeserializer<SmsCodeAuthenticationToken> {
 
 	private static final TypeReference<List<GrantedAuthority>> GRANTED_AUTHORITY_LIST = new TypeReference<List<GrantedAuthority>>() {
 	};
@@ -26,7 +26,7 @@ public class MemberUserDetailsAuthenticationTokenDeserializer extends JsonDeseri
 	};
 
 	@Override
-	public OAuth2SmsCodeAuthenticationToken deserialize(JsonParser jp, DeserializationContext ctxt)
+	public SmsCodeAuthenticationToken deserialize(JsonParser jp, DeserializationContext ctxt)
 			throws IOException, JsonProcessingException {
 
 		ObjectMapper mapper = (ObjectMapper) jp.getCodec();
@@ -45,7 +45,7 @@ public class MemberUserDetailsAuthenticationTokenDeserializer extends JsonDeseri
 //		OAuth2SmsCodeAuthenticationToken token = (!authenticated)
 //				? new OAuth2SmsCodeAuthenticationToken(principal, credentials)
 //				: new OAuth2SmsCodeAuthenticationToken(principal, credentials, authorities);
-        OAuth2SmsCodeAuthenticationToken token = new OAuth2SmsCodeAuthenticationToken(null, null, null);
+        SmsCodeAuthenticationToken token = new SmsCodeAuthenticationToken(null, null, null);
 		JsonNode detailsNode = readJsonNode(jsonNode, "details");
 		if (detailsNode.isNull() || detailsNode.isMissingNode()) {
 			token.setDetails(null);

@@ -1,4 +1,4 @@
-package cn.zrj.mall.auth.security.extension.mobile;
+package cn.zrj.mall.auth.security.extension.wechat;
 
 
 import cn.zrj.mall.auth.security.OAuth2GrantType;
@@ -18,12 +18,12 @@ import java.util.*;
  * @author zhaorujie
  * @date 2022/9/27
  */
-public class OAuth2SmsCodeAuthenticationConverter implements AuthenticationConverter {
+public class WeChatAuthenticationConverter implements AuthenticationConverter {
 
     @Override
     public Authentication convert(HttpServletRequest request) {
         String grantType = request.getParameter(OAuth2ParameterNames.GRANT_TYPE);
-        if (!Objects.equals(OAuth2GrantType.SMS_CODE_GRANT_TYPE, grantType)) {
+        if (!Objects.equals(OAuth2GrantType.WX_APP_GRANT_TYPE, grantType)) {
             return null;
         }
 
@@ -33,8 +33,11 @@ public class OAuth2SmsCodeAuthenticationConverter implements AuthenticationConve
         String code = parameters.getFirst(OAuth2ParamsNames.CODE);
         OAuth2EndpointUtils.checkRequiredParameter(parameters, OAuth2ParamsNames.CODE);
 
-        String mobile = parameters.getFirst(OAuth2ParamsNames.MOBILE);
-        OAuth2EndpointUtils.checkRequiredParameter(parameters, OAuth2ParamsNames.MOBILE);
+        String encryptedData = parameters.getFirst(OAuth2ParamsNames.ENCRYPTED_DATA);
+        OAuth2EndpointUtils.checkRequiredParameter(parameters, OAuth2ParamsNames.ENCRYPTED_DATA);
+
+        String iv = parameters.getFirst(OAuth2ParamsNames.IV);
+        OAuth2EndpointUtils.checkRequiredParameter(parameters, OAuth2ParamsNames.IV);
 
         String scope = parameters.getFirst(OAuth2ParameterNames.SCOPE);
         OAuth2EndpointUtils.checkRequiredParameter(parameters, OAuth2ParameterNames.SCOPE);
@@ -49,10 +52,11 @@ public class OAuth2SmsCodeAuthenticationConverter implements AuthenticationConve
             if (!key.equals(OAuth2ParameterNames.GRANT_TYPE) &&
                     !key.equals(OAuth2ParameterNames.SCOPE) &&
                     !key.equals(OAuth2ParamsNames.CODE) &&
-                    !key.equals(OAuth2ParamsNames.MOBILE)) {
+                    !key.equals(OAuth2ParamsNames.ENCRYPTED_DATA) &&
+                    !key.equals(OAuth2ParamsNames.IV)) {
                 additionalParameters.put(key, value.get(0));
             }
         });
-        return new OAuth2SmsCodeAuthenticationToken(authentication, additionalParameters, requestedScopes, code, mobile);
+        return new WeChatAuthenticationToken(authentication, requestedScopes, additionalParameters, code, encryptedData, iv);
     }
 }

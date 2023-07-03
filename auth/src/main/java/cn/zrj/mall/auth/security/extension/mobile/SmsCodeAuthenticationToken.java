@@ -14,7 +14,7 @@ import java.util.Set;
  * @author zhaorujie
  * @date 2022/8/22
  */
-public class OAuth2SmsCodeAuthenticationToken extends OAuth2AuthorizationGrantAuthenticationToken {
+public class SmsCodeAuthenticationToken extends OAuth2AuthorizationGrantAuthenticationToken {
 
     private static final long serialVersionUID = 1L;
 
@@ -24,15 +24,15 @@ public class OAuth2SmsCodeAuthenticationToken extends OAuth2AuthorizationGrantAu
 
     private String mobile;
 
-    public OAuth2SmsCodeAuthenticationToken(AuthorizationGrantType authorizationGrantType, Authentication clientPrincipal, Map<String, Object> additionalParameters) {
+    public SmsCodeAuthenticationToken(AuthorizationGrantType authorizationGrantType, Authentication clientPrincipal, Map<String, Object> additionalParameters) {
         super(authorizationGrantType, clientPrincipal, additionalParameters);
     }
 
-    public OAuth2SmsCodeAuthenticationToken(Authentication clientPrincipal,
-                                            Map<String, Object> additionalParameters,
-                                            Set<String> scopes,
-                                            String code,
-                                            String mobile) {
+    public SmsCodeAuthenticationToken(Authentication clientPrincipal,
+                                      Map<String, Object> additionalParameters,
+                                      Set<String> scopes,
+                                      String code,
+                                      String mobile) {
         super(OAuth2GrantType.SMS_CODE, clientPrincipal, additionalParameters);
         Assert.notNull(code, "code is not null");
         Assert.notNull(mobile, "mobile is not null");

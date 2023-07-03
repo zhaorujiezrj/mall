@@ -16,7 +16,7 @@ import java.util.*;
 /**
  * @author zhaorujie
  */
-public final class OAuth2UsernamePasswordAuthenticationConverter implements AuthenticationConverter {
+public final class UsernamePasswordAuthenticationConverter implements AuthenticationConverter {
 
     @Override
     public Authentication convert(HttpServletRequest request) {
@@ -63,7 +63,7 @@ public final class OAuth2UsernamePasswordAuthenticationConverter implements Auth
             }
         });
 
-        return new OAuth2UsernamePasswordAuthenticationToken(clientPrincipal, requestedScopes, additionalParameters, username, password);
+        return new UsernamePasswordAuthenticationToken(clientPrincipal, requestedScopes, additionalParameters, username, password);
 
     }
 

@@ -18,4 +18,7 @@ public class OAuth2GrantType {
     public static final String WX_APP_GRANT_TYPE = "wx_app";
     public static final AuthorizationGrantType WX_APP = new AuthorizationGrantType(WX_APP_GRANT_TYPE);
 
+
+    public static final String CAPTCHA = "captcha";
+
 }
