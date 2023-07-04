@@ -184,13 +184,13 @@ public class AuthorizationServiceConfig {
 
         http.authenticationProvider(daoAuthenticationProvider());
         http.authenticationProvider(new SmsCodeAuthenticationProvider(authorizationService, tokenGenerator,
-                authenticationManager, memberUserDetailsService));
+                authenticationManager, memberUserDetailsService, memberClient));
         http.authenticationProvider(new UsernamePasswordAuthenticationProvider(authorizationService, tokenGenerator,
                 authenticationManager));
         http.authenticationProvider(new WeChatAuthenticationProvider(authorizationService, tokenGenerator,
-                memberUserDetailsService, wxMaService, memberClient));
+                memberUserDetailsService, wxMaService, memberClient, authenticationManager));
 
-        http.authenticationProvider(new CaptchaAuthenticationProvider(sysUserDetailsService, passwordEncoder()));
+//        http.authenticationProvider(new CaptchaAuthenticationProvider(sysUserDetailsService, passwordEncoder()));
 
         return http.build();
     }

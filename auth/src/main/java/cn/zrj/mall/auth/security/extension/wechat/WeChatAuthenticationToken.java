@@ -12,6 +12,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * @author rujie_z
+ */
 public class WeChatAuthenticationToken extends OAuth2AuthorizationGrantAuthenticationToken {
 
     private final Set<String> scopes;
@@ -26,7 +29,7 @@ public class WeChatAuthenticationToken extends OAuth2AuthorizationGrantAuthentic
                                      @Nullable String code,
                                      @Nullable String encryptedData,
                                      @Nullable String iv) {
-        super(OAuth2GrantType.SMS_CODE, clientPrincipal, additionalParameters);
+        super(OAuth2GrantType.WX_APP, clientPrincipal, additionalParameters);
         Assert.notNull(clientPrincipal, "clientPrincipal cannot be null");
         this.scopes = Collections.unmodifiableSet(CollectionUtils.isNotEmpty(scopes) ? new HashSet<>(scopes) : Collections.emptySet());
         this.code = code;

@@ -6,6 +6,7 @@ import cn.zrj.mall.common.core.result.Result;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.service.annotation.GetExchange;
 import org.springframework.web.service.annotation.HttpExchange;
+import org.springframework.web.service.annotation.PostExchange;
 import org.springframework.web.service.annotation.PutExchange;
 
 /**
@@ -18,10 +19,10 @@ public interface MemberClient {
     @GetExchange("/app-api/v1/member/openid/{openid}")
     Result<MemberAuthDto> getMemberByOpenid(@PathVariable String openid);
 
-    @GetMapping("/app-api/v1/member/mobile/{mobile}")
+    @GetExchange("/app-api/v1/member/mobile/{mobile}")
     Result<MemberAuthDto> getMemberByMobile(@PathVariable String mobile);
 
-    @PostMapping("/app-api/v1/member")
+    @PostExchange("/app-api/v1/member")
     Result<Void> addMember(@RequestBody MemberDto memberDto);
 
     @PutExchange("/app-api/v1/member")

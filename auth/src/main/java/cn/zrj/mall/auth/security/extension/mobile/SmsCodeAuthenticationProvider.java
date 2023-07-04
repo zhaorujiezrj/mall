@@ -1,10 +1,15 @@
 package cn.zrj.mall.auth.security.extension.mobile;
 
+import cn.zrj.mall.auth.client.MemberClient;
+import cn.zrj.mall.auth.dto.MemberAuthDto;
+import cn.zrj.mall.auth.dto.MemberDto;
 import cn.zrj.mall.auth.security.OAuth2GrantType;
 import cn.zrj.mall.auth.security.OAuth2ParamsNames;
 import cn.zrj.mall.auth.security.userdetails.member.MemberUserDetails;
 import cn.zrj.mall.auth.security.userdetails.member.MemberUserDetailsServiceImpl;
 import cn.zrj.mall.auth.security.utils.OAuth2AuthenticationProviderUtils;
+import cn.zrj.mall.common.core.exception.BusinessException;
+import cn.zrj.mall.common.core.result.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -45,19 +50,22 @@ public class SmsCodeAuthenticationProvider implements AuthenticationProvider {
 
     private final MemberUserDetailsServiceImpl memberUserDetailsService;
 
+    private final MemberClient memberClient;
+
     private static final OAuth2TokenType ID_TOKEN_TOKEN_TYPE =
             new OAuth2TokenType(OidcParameterNames.ID_TOKEN);
-    private SessionRegistry sessionRegistry;
 
     public SmsCodeAuthenticationProvider(OAuth2AuthorizationService authorizationService,
                                          OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator,
-                                         AuthenticationManager authenticationManager, MemberUserDetailsServiceImpl memberUserDetailsService) {
+                                         AuthenticationManager authenticationManager, MemberUserDetailsServiceImpl memberUserDetailsService,
+                                         MemberClient memberClient) {
         Assert.notNull(authorizationService, "authorizationService cannot be null");
         Assert.notNull(tokenGenerator, "tokenGenerator cannot be null");
         this.authorizationService = authorizationService;
         this.tokenGenerator = tokenGenerator;
         this.authenticationManager = authenticationManager;
         this.memberUserDetailsService = memberUserDetailsService;
+        this.memberClient = memberClient;
     }
 
     @Override
@@ -75,9 +83,18 @@ public class SmsCodeAuthenticationProvider implements AuthenticationProvider {
         String mobile = smsAuthenticationToken.getMobile();
         String code = smsAuthenticationToken.getCode();
         log.info("手机号验证码登录信息【mobile = {}, code = {}】", mobile, code);
+        //todo 校验验证码
 
-//        SmsCodeAuthenticationToken principal = new SmsCodeAuthenticationToken(userDetails, authentication.getCredentials(), new HashSet<>());
-//        result.setDetails(authentication.getDetails());
+        Result<MemberAuthDto> memberResult = memberClient.getMemberByMobile(mobile);
+        if (!Result.isSuccess(memberResult)) {
+            throw new BusinessException("获取用户信息失败!");
+        }
+        MemberAuthDto data = memberResult.getData();
+        if (data == null) {
+            MemberDto memberDto = new MemberDto();
+            memberDto.setMobile(mobile);
+            memberClient.addMember(memberDto);
+        }
         MemberUserDetails userDetails = (MemberUserDetails) memberUserDetailsService.loadUserByMobile(mobile);
         smsAuthenticationToken.setDetails(userDetails);
         Authentication principal = smsAuthenticationToken;

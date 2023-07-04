@@ -69,7 +69,7 @@ security:
     - /favicon.ico
 
     # oauth2
-    - /oauth2/**
+    - /auth/oauth2/**
     - /admin/sms/**
 
 knife4j:

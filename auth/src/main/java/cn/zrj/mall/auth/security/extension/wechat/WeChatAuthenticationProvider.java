@@ -16,6 +16,7 @@ import cn.zrj.mall.common.core.result.Result;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -54,11 +55,14 @@ public class WeChatAuthenticationProvider implements AuthenticationProvider {
     private final WxMaService wxMaService;
     private final MemberClient memberClient;
 
+    private final AuthenticationManager authenticationManager;
+
     public WeChatAuthenticationProvider(OAuth2AuthorizationService authorizationService,
                                         OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator,
                                         MemberUserDetailsServiceImpl memberUserDetailsService,
                                         WxMaService wxMaService,
-                                        MemberClient memberClient) {
+                                        MemberClient memberClient,
+                                        AuthenticationManager authenticationManager) {
         Assert.notNull(authorizationService, "authorizationService cannot be null");
         Assert.notNull(tokenGenerator, "tokenGenerator cannot be null");
         this.authorizationService = authorizationService;
@@ -66,6 +70,7 @@ public class WeChatAuthenticationProvider implements AuthenticationProvider {
         this.memberUserDetailsService = memberUserDetailsService;
         this.wxMaService = wxMaService;
         this.memberClient = memberClient;
+        this.authenticationManager = authenticationManager;
     }
 
     @Override
@@ -77,7 +82,7 @@ public class WeChatAuthenticationProvider implements AuthenticationProvider {
         if (registeredClient == null) {
             throw new OAuth2AuthenticationException("client is error");
         }
-        if (!registeredClient.getAuthorizationGrantTypes().contains(OAuth2GrantType.SMS_CODE)) {
+        if (!registeredClient.getAuthorizationGrantTypes().contains(OAuth2GrantType.WX_APP)) {
             throw new OAuth2AuthenticationException("unauthorized_client");
         }
 
@@ -142,13 +147,13 @@ public class WeChatAuthenticationProvider implements AuthenticationProvider {
                 .authorizationServerContext(AuthorizationServerContextHolder.getContext())
 //                .authorization(authorization)
                 .authorizedScopes(authorizedScopes)
-                .authorizationGrantType(OAuth2GrantType.SMS_CODE)
+                .authorizationGrantType(OAuth2GrantType.WX_APP)
                 .authorizationGrant(weChatAuthenticationToken);
         // @formatter:on
 
         OAuth2Authorization.Builder authorizationBuilder = OAuth2Authorization.withRegisteredClient(registeredClient)
                 .principalName(principal.getName())
-                .authorizationGrantType(OAuth2GrantType.SMS_CODE)
+                .authorizationGrantType(OAuth2GrantType.WX_APP)
                 .authorizedScopes(authorizedScopes)
                 .attribute(OAuth2ParamsNames.PRINCIPAL, principal);
 
@@ -228,6 +233,6 @@ public class WeChatAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return SmsCodeAuthenticationToken.class.isAssignableFrom(authentication);
+        return WeChatAuthenticationToken.class.isAssignableFrom(authentication);
     }
 }
