@@ -1,0 +1,4 @@
+cn.zrj.mall.common.mybatis.config.MybatisPlusConfig
+cn.zrj.mall.common.mybatis.handler.MyMetaObjectHandler
+
+

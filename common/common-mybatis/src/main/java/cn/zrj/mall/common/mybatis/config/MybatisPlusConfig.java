@@ -2,8 +2,10 @@ package cn.zrj.mall.common.mybatis.config;
 
 
 import cn.zrj.mall.common.mybatis.handler.MyMetaObjectHandler;
+import cn.zrj.mall.common.mybatis.injector.SupperSqlInjector;
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.core.config.GlobalConfig;
+import com.baomidou.mybatisplus.core.injector.ISqlInjector;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import org.springframework.context.annotation.Bean;
@@ -36,5 +38,14 @@ public class MybatisPlusConfig {
         GlobalConfig globalConfig = new GlobalConfig();
         globalConfig.setMetaObjectHandler(new MyMetaObjectHandler());
         return globalConfig;
+    }
+
+    /**
+     * 自定义SQL注入器，扩展mybatis-plus提供的SQL实现
+     * @return
+     */
+    @Bean
+    public SupperSqlInjector sqlInjector() {
+        return new SupperSqlInjector();
     }
 }
