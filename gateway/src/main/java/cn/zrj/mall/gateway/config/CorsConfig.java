@@ -7,6 +7,9 @@ import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.util.pattern.PathPatternParser;
 
+/**
+ * @author rujie_z
+ */
 @Configuration
 public class CorsConfig {
 
@@ -19,9 +22,9 @@ public class CorsConfig {
         // springboot升级成2.4.0以上时对AllowedOrigin设置发生了改变，不能有”*“,可以替换成AllowedOriginPattern
         config.addAllowedOrigin("*");
         config.addAllowedHeader("*");
-        config.setAllowCredentials(true);
+        config.setAllowCredentials(false);
 
-        // 必须是reactive包下的UrlBasedCorsConfigurationSource 
+        // 必须是reactive包下的UrlBasedCorsConfigurationSource
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource(new PathPatternParser());
         source.registerCorsConfiguration("/**", config);
         return new CorsWebFilter(source);

@@ -3,22 +3,26 @@ package cn.zrj.mall.auth.security.config;
 import cn.binarywang.wx.miniapp.api.WxMaService;
 import cn.hutool.core.codec.Base64;
 import cn.hutool.core.io.IoUtil;
-import cn.zrj.mall.auth.client.MemberClient;
-import cn.zrj.mall.auth.security.extension.captcha.CaptchaAuthenticationProvider;
-import cn.zrj.mall.auth.security.extension.mobile.SmsCodeAuthenticationConverter;
-import cn.zrj.mall.auth.security.extension.mobile.SmsCodeAuthenticationProvider;
-import cn.zrj.mall.auth.security.extension.mobile.SmsCodeAuthenticationToken;
-import cn.zrj.mall.auth.security.extension.password.UsernamePasswordAuthenticationConverter;
-import cn.zrj.mall.auth.security.extension.password.UsernamePasswordAuthenticationProvider;
-import cn.zrj.mall.auth.security.extension.wechat.WeChatAuthenticationProvider;
-import cn.zrj.mall.auth.security.extension.wechat.WeChatAuthenticationConverter;
-import cn.zrj.mall.auth.security.extension.deserializer.MemberUserDetailsAuthenticationTokenMixin;
-import cn.zrj.mall.auth.security.extension.deserializer.SysUserDetailsAuthenticationTokenMixin;
+import cn.hutool.json.JSONUtil;
+import cn.zrj.mall.auth.security.authentication.captcha.CaptchaAuthenticationConverter;
+import cn.zrj.mall.auth.security.authentication.captcha.CaptchaAuthenticationProvider;
+import cn.zrj.mall.auth.security.handler.MyAuthenticationFailureHandler;
+import cn.zrj.mall.auth.security.handler.MyAuthenticationSuccessHandler;
+import cn.zrj.mall.auth.security.authentication.mobile.SmsCodeAuthenticationConverter;
+import cn.zrj.mall.auth.security.authentication.mobile.SmsCodeAuthenticationProvider;
+import cn.zrj.mall.auth.security.authentication.password.PasswordAuthenticationConverter;
+import cn.zrj.mall.auth.security.authentication.password.PasswordAuthenticationProvider;
+import cn.zrj.mall.auth.security.authentication.wxminiapp.WxMiniAppAuthenticationProvider;
+import cn.zrj.mall.auth.security.authentication.wxminiapp.WxMiniAppAuthenticationConverter;
+//import cn.zrj.mall.auth.security.point.LoginTargetAuthenticationEntryPoint;
+//import cn.zrj.mall.auth.security.point.RedisSecurityContextRepository;
+import cn.zrj.mall.auth.security.userdetails.member.deserializer.MemberUserMixin;
+import cn.zrj.mall.auth.security.userdetails.user.deserializer.SysUserMixin;
 import cn.zrj.mall.auth.security.userdetails.member.MemberUserDetails;
 import cn.zrj.mall.auth.security.userdetails.member.MemberUserDetailsServiceImpl;
 import cn.zrj.mall.auth.security.userdetails.user.SysUserDetails;
 import cn.zrj.mall.auth.security.userdetails.user.SysUserDetailsServiceImpl;
-import cn.zrj.mall.auth.security.utils.OAuth2ConfigurerUtils;
+import cn.zrj.mall.common.core.constant.RedisConstants;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -29,39 +33,42 @@ import com.nimbusds.jose.proc.SecurityContext;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.jackson2.SecurityJackson2Modules;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
-import org.springframework.security.oauth2.core.OAuth2Token;
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.oauth2.server.authorization.*;
+import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AuthorizationCodeAuthenticationProvider;
 import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.jackson2.OAuth2AuthorizationServerJackson2Module;
+import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.oauth2.server.authorization.token.*;
-import org.springframework.security.oauth2.server.authorization.web.authentication.DelegatingAuthenticationConverter;
 import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2AuthorizationCodeAuthenticationConverter;
+import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2AuthorizationCodeRequestAuthenticationConverter;
 import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2ClientCredentialsAuthenticationConverter;
 import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2RefreshTokenAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
@@ -69,6 +76,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.rsa.crypto.KeyStoreKeyFactory;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import java.io.InputStream;
@@ -79,6 +87,7 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author zhaorujie
@@ -90,17 +99,19 @@ import java.util.*;
 @RequiredArgsConstructor
 public class AuthorizationServiceConfig {
 
-    @Lazy
-    @Autowired
-    private AuthenticationManager authenticationManager;
     private final SysUserDetailsServiceImpl sysUserDetailsService;
     private final MemberUserDetailsServiceImpl memberUserDetailsService;
-    private final JdbcTemplate jdbcTemplate;
     private final WxMaService wxMaService;
-    private final MemberClient memberClient;
+    private final StringRedisTemplate redisTemplate;
+//    private final RedisSecurityContextRepository redisSecurityContextRepository;
 
+    private static final String CUSTOM_CONSENT_PAGE_URI = "/oauth2/consent";
 
+    // http://localhost:9000/auth/oauth2/authorize?client_id=client&response_type=code&scope=message.read&redirect_uri=https://baidu.com
+
+    //http://127.0.0.1:9000/auth/oauth2/authorize?client_id=client&response_type=code&scope=message.read&redirect_uri=https://www.baidu.com
     /**
+     * 授权配置
      * 这是个Spring security 的过滤器链，默认会配置
      * <p>
      * OAuth2 Authorization endpoint
@@ -126,39 +137,56 @@ public class AuthorizationServiceConfig {
      */
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
-        OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
-                new OAuth2AuthorizationServerConfigurer();
+    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http,
+                                                                      AuthenticationManager authenticationManager,
+                                                                      OAuth2AuthorizationService authorizationService,
+                                                                      OAuth2TokenGenerator<?> tokenGenerator) throws Exception {
+        // 使用redis存储、读取登录的认证信息
+//        http.securityContext(context -> context.securityContextRepository(redisSecurityContextRepository));
 
+        OAuth2AuthorizationServerConfigurer authorizationServerConfigurer = new OAuth2AuthorizationServerConfigurer();
         authorizationServerConfigurer.tokenEndpoint(endpoint -> {
-            DelegatingAuthenticationConverter authenticationConverter = new DelegatingAuthenticationConverter(
-                    Arrays.asList(
-                            new OAuth2AuthorizationCodeAuthenticationConverter(),
-                            new OAuth2RefreshTokenAuthenticationConverter(),
-                            new OAuth2ClientCredentialsAuthenticationConverter(),
-                            new UsernamePasswordAuthenticationConverter(),
-                            new SmsCodeAuthenticationConverter(),
-                            new WeChatAuthenticationConverter()));
-            endpoint.accessTokenRequestConverter(authenticationConverter);
+
+            endpoint.accessTokenRequestConverters(authenticationConverters ->
+                    authenticationConverters.addAll(
+                            List.of(
+//                                    new OAuth2AuthorizationCodeRequestAuthenticationConverter(),
+//                                    new OAuth2AuthorizationCodeAuthenticationConverter(),
+//                                    new OAuth2RefreshTokenAuthenticationConverter(),
+//                                    new OAuth2ClientCredentialsAuthenticationConverter(),
+                                    new PasswordAuthenticationConverter(),
+                                    new SmsCodeAuthenticationConverter(),
+                                    new WxMiniAppAuthenticationConverter(),
+                                    new CaptchaAuthenticationConverter()
+                            )
+                    ));
+
+            endpoint.authenticationProviders(authenticationProviders ->
+                    authenticationProviders.addAll(
+                            List.of(
+                                    new PasswordAuthenticationProvider(authorizationService, tokenGenerator, authenticationManager),
+                                    new SmsCodeAuthenticationProvider(authorizationService, tokenGenerator, memberUserDetailsService, redisTemplate),
+                                    new WxMiniAppAuthenticationProvider(authorizationService, tokenGenerator, memberUserDetailsService, wxMaService),
+                                    new CaptchaAuthenticationProvider(authenticationManager, authorizationService, tokenGenerator, redisTemplate))
+                    ));
+
+            endpoint.accessTokenResponseHandler(new MyAuthenticationSuccessHandler()) // 自定义成功响应
+                    .errorResponseHandler(new MyAuthenticationFailureHandler()); // 自定义异常响应
         });
 
         http.oauth2ResourceServer(resourceServer -> resourceServer.jwt(Customizer.withDefaults()));
 
-        RequestMatcher endpointsMatcher = authorizationServerConfigurer
-                .getEndpointsMatcher();
-        http
-                .securityMatcher(endpointsMatcher)
-                .authorizeHttpRequests(authorizeRequests ->
-                        authorizeRequests.anyRequest().authenticated()
-                )
-                .csrf(csrf -> csrf.ignoringRequestMatchers(endpointsMatcher))
-        ;
-        http
-                // Redirect to the login page when not authenticated from the
-                // authorization endpoint
-                .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login")));
-        // 也可以使用如下代码，跳转到login page
-//        http.formLogin(Customizer.withDefaults());
+        RequestMatcher endpointsMatcher = authorizationServerConfigurer.getEndpointsMatcher();
+        http.securityMatcher(endpointsMatcher)
+                .authorizeHttpRequests(authorizeRequests -> authorizeRequests.anyRequest().authenticated())
+                .csrf(csrf -> csrf.ignoringRequestMatchers(endpointsMatcher));
+
+        http.apply(authorizationServerConfigurer);
+
+//        http
+//                // Redirect to the login page when not authenticated from the
+//                // authorization endpoint
+//                .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login")));
 
         authorizationServerConfigurer
                 .oidc(oidc -> {
@@ -176,33 +204,31 @@ public class AuthorizationServiceConfig {
                             oidc.clientRegistrationEndpoint(Customizer.withDefaults());
                         }
                 );
-//        http.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
-        http.apply(authorizationServerConfigurer);
 
-        OAuth2AuthorizationService authorizationService = OAuth2ConfigurerUtils.getAuthorizationService(http);
-        OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator = OAuth2ConfigurerUtils.getTokenGenerator(http);
-
-        http.authenticationProvider(daoAuthenticationProvider());
-        http.authenticationProvider(new SmsCodeAuthenticationProvider(authorizationService, tokenGenerator,
-                authenticationManager, memberUserDetailsService));
-        http.authenticationProvider(new UsernamePasswordAuthenticationProvider(authorizationService, tokenGenerator,
-                authenticationManager));
-        http.authenticationProvider(new WeChatAuthenticationProvider(authorizationService, tokenGenerator,
-                memberUserDetailsService, wxMaService, memberClient));
-
-        http.authenticationProvider(new CaptchaAuthenticationProvider(sysUserDetailsService, passwordEncoder()));
+//        http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
+//                // 开启OpenID Connect 1.0协议相关端点
+//                .oidc(Customizer.withDefaults())
+//                // 设置自定义用户确认授权页
+//                .authorizationEndpoint(Customizer.withDefaults())
+//                // 设置设备码用户验证url(自定义用户验证页)
+//                .deviceAuthorizationEndpoint(deviceAuthorizationEndpoint ->
+//                        deviceAuthorizationEndpoint.verificationUri("/activate")
+//                )
+//                // 设置验证设备码用户确认页面
+//                .deviceVerificationEndpoint(deviceVerificationEndpoint ->
+//                        deviceVerificationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI)
+//                );
 
         return http.build();
     }
 
+
     @Bean
-    public DaoAuthenticationProvider daoAuthenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(sysUserDetailsService);
-        provider.setPasswordEncoder(passwordEncoder());
-        // 是否隐藏用户不存在异常，默认:true-隐藏；false-抛出异常；
-        provider.setHideUserNotFoundExceptions(false);
-        return provider;
+    public AuthenticationProvider daoAuthenticationProvider() {
+        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+        daoAuthenticationProvider.setUserDetailsService(sysUserDetailsService);
+        daoAuthenticationProvider.setHideUserNotFoundExceptions(false) ; // 抛出用户不存在异常
+        return daoAuthenticationProvider ;
     }
 
     /**
@@ -217,18 +243,18 @@ public class AuthorizationServiceConfig {
     }
 
     @Bean
-    public RegisteredClientRepository registeredClientRepository() {
+    public RegisteredClientRepository registeredClientRepository(JdbcTemplate jdbcTemplate) {
         return new JdbcRegisteredClientRepository(jdbcTemplate);
     }
 
     @Bean
-    public OAuth2AuthorizationService authorizationService() {
+    public OAuth2AuthorizationService authorizationService(JdbcTemplate jdbcTemplate) {
         JdbcOAuth2AuthorizationService service = new JdbcOAuth2AuthorizationService(jdbcTemplate,
-                registeredClientRepository());
+                registeredClientRepository(jdbcTemplate));
 
         //配置Jackson 反序列化白名单
         JdbcOAuth2AuthorizationService.OAuth2AuthorizationRowMapper authorizationRowMapper = new JdbcOAuth2AuthorizationService.OAuth2AuthorizationRowMapper(
-                registeredClientRepository());
+                registeredClientRepository(jdbcTemplate));
         authorizationRowMapper.setLobHandler(new DefaultLobHandler());
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -236,8 +262,9 @@ public class AuthorizationServiceConfig {
         List<Module> securityModules = SecurityJackson2Modules.getModules(classLoader);
         objectMapper.registerModules(securityModules);
         objectMapper.registerModule(new OAuth2AuthorizationServerJackson2Module());
-        objectMapper.addMixIn(SmsCodeAuthenticationToken.class, MemberUserDetailsAuthenticationTokenMixin.class);
-        objectMapper.addMixIn(UsernamePasswordAuthenticationToken.class, SysUserDetailsAuthenticationTokenMixin.class);
+        objectMapper.addMixIn(SysUserDetails.class, SysUserMixin.class);
+        objectMapper.addMixIn(MemberUserDetails.class, MemberUserMixin.class);
+        objectMapper.addMixIn(Long.class, Object.class);
         authorizationRowMapper.setObjectMapper(objectMapper);
 
         service.setAuthorizationRowMapper(authorizationRowMapper);
@@ -245,8 +272,18 @@ public class AuthorizationServiceConfig {
     }
 
     @Bean
-    public OAuth2AuthorizationConsentService authorizationConsentService() {
-        return new JdbcOAuth2AuthorizationConsentService(jdbcTemplate, registeredClientRepository());
+    public OAuth2AuthorizationConsentService authorizationConsentService(JdbcTemplate jdbcTemplate, RegisteredClientRepository registeredClientRepository) {
+        return new JdbcOAuth2AuthorizationConsentService(jdbcTemplate, registeredClientRepository);
+    }
+
+    @Bean
+    public AuthorizationServerSettings authorizationServerSettings() {
+        return AuthorizationServerSettings.builder().build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 
 
@@ -331,26 +368,25 @@ public class AuthorizationServiceConfig {
     @Bean
     public OAuth2TokenCustomizer<JwtEncodingContext> jwtCustomizer() {
         return context -> {
-//            JwsHeader.Builder jwsHeader = context.getJwsHeader();
             JwtClaimsSet.Builder claims = context.getClaims();
-//            OAuth2Authorization authorization = context.getAuthorization();
-//            Authentication authorizationGrant = context.getAuthorizationGrant();
-            Authentication principal = context.getPrincipal();
-            if (principal instanceof UsernamePasswordAuthenticationToken) {
-                SysUserDetails sysUserDetails = (SysUserDetails) principal.getPrincipal();
+            Object principal = context.getPrincipal().getPrincipal();
+            if (principal instanceof SysUserDetails sysUserDetails)  {
+                claims.claim("userId", sysUserDetails.getUserId());
                 claims.claim("username", sysUserDetails.getUsername());
-            } else if (principal instanceof SmsCodeAuthenticationToken) {
-                MemberUserDetails memberUserDetails = (MemberUserDetails) principal.getDetails();
+                // 这里存入角色至JWT，解析JWT的角色用于鉴权的位置: ResourceServerConfig#jwtAuthenticationConverter
+                var authorities = AuthorityUtils.authorityListToSet(context.getPrincipal().getAuthorities())
+                        .stream()
+                        .collect(Collectors.collectingAndThen(Collectors.toSet(), Collections::unmodifiableSet));
+                claims.claim(RedisConstants.AUTHORITIES_CLAIM_NAME_KEY, authorities);
+
+                // 权限数据比较多，缓存至redis
+                Set<String> perms = sysUserDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
+                redisTemplate.opsForValue().set(RedisConstants.AUTHORITIES_CLAIM_NAME_KEY + sysUserDetails.getUserId(), JSONUtil.toJsonStr(perms));
+            } else if (principal instanceof MemberUserDetails memberUserDetails) {
+                claims.claim("memberId", memberUserDetails.getMemberId());
                 claims.claim("username", memberUserDetails.getUsername());
                 claims.claim("mobile", memberUserDetails.getMobile());
             }
-//            if (context.getTokenType().equals(OAuth2TokenType.ACCESS_TOKEN)) {
-//                // Customize headers/claims for access_token
-//                log.info("accessTokens");
-//            } else if (context.getTokenType().getValue().equals(OidcParameterNames.ID_TOKEN)) {
-//                // Customize headers/claims for id_token
-//                log.info("id_tokens");
-//            }
         };
     }
 

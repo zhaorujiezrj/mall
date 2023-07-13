@@ -39,7 +39,7 @@
         <hutool.version>5.8.11</hutool.version>
         <knife4j.version>4.0.0</knife4j.version>
         <swagger.version>2.2.10</swagger.version>
-        <weixin-java.version>4.1.5.B</weixin-java.version>
+        <weixin-java.version>4.5.0</weixin-java.version>
         <nimbus-jose-jwt.version>9.16.1</nimbus-jose-jwt.version>
         <rocketmq.version>2.2.2</rocketmq.version>
         <redisson.version>3.17.5</redisson.version>

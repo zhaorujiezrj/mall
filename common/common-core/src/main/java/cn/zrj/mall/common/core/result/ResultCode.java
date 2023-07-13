@@ -17,6 +17,8 @@ public enum ResultCode implements Serializable {
     USER_NOT_EXIST("400", "用户不存在"),
     PARAM_ERROR("400", "用户请求参数错误"),
     RESOURCE_NOT_FOUND("404", "请求资源不存在"),
+
+    PLEASE_MOBILE_AUTH("1001", "初次登录需要绑定手机号")
     ;
 
     private String code;
