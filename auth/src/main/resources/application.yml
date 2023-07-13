@@ -42,8 +42,8 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 wechat:
-  appId: wx21a0fd49d51ea49a
-  secret: 4405446a86752a6a1bdd099afd8e6888
+  appId: 
+  secret: 
 
 # Feign 配置
 feign:
