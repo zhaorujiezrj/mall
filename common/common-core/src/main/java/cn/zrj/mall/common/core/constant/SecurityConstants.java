@@ -11,4 +11,9 @@ public interface SecurityConstants {
      String AUTHENTICATION = "Authorization";
 
      String BEARER = "bearer ";
+
+    /**
+     * 随机字符串请求头名字
+     */
+    String NONCE_HEADER_NAME = "nonce";
 }

@@ -1,0 +1,21 @@
+
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  application:
+    name: auth
+
+  profiles:
+    active: dev
+
+  cloud:
+    nacos:
+      config:
+        enabled: true
+        file-extension: yml
+        prefix: ${spring.application.name}-application
+        namespace: ${spring.profiles.active}
+      discovery:
+        enabled: true
+        namespace: ${spring.profiles.active}

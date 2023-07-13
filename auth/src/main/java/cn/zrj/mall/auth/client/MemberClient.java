@@ -23,7 +23,7 @@ public interface MemberClient {
     Result<MemberAuthDto> getMemberByMobile(@PathVariable String mobile);
 
     @PostExchange("/app-api/v1/member")
-    Result<Void> addMember(@RequestBody MemberDto memberDto);
+    Result<Long> addMember(@RequestBody MemberDto memberDto);
 
     @PutExchange("/app-api/v1/member")
     Result<Void> updateMember(@RequestBody MemberDto memberDto);

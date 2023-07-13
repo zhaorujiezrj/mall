@@ -1,0 +1,10 @@
+spring:
+  cloud:
+    nacos:
+      config:
+        enabled: true
+      username: ${NACOS_USER:nacos}
+      password: ${NACOS_PWSSROD:nacos}
+      server-addr: ${NACOS_SERVER:127.0.0.1:8848}
+    inetutils:
+      preferred-networks: 172

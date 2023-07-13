@@ -1,4 +1,4 @@
-package cn.zrj.mall.gateway.config;
+package cn.zrj.mall.auth.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -7,9 +7,6 @@ import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.util.pattern.PathPatternParser;
 
-/**
- * @author rujie_z
- */
 @Configuration
 public class CorsConfig {
 

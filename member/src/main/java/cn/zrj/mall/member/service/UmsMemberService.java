@@ -30,7 +30,7 @@ public interface UmsMemberService extends IService<UmsMember> {
      * 添加用户
      * @param memberDTO
      */
-    void addMember(MemberDto memberDTO);
+    Long addMember(MemberDto memberDTO);
 
     /**
      * 修改用户

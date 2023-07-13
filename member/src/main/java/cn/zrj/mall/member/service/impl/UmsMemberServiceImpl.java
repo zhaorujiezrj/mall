@@ -46,10 +46,12 @@ public class UmsMemberServiceImpl extends ServiceImpl<UmsMemberMapper, UmsMember
     }
 
     @Override
-    public void addMember(MemberDto memberDto) {
+    public Long addMember(MemberDto memberDto) {
         UmsMember umsMember = BeanUtil.copyProperties(memberDto, UmsMember.class);
         umsMember.setStatus(1);
         this.save(umsMember);
+
+        return umsMember.getId();
     }
 
     @Override

@@ -46,9 +46,8 @@ public class MemberController {
     }
 
     @PostMapping
-    public Result<Void> addMember(@RequestBody MemberDto memberDto) {
-        memberService.addMember(memberDto);
-        return Result.success();
+    public Result<Long> addMember(@RequestBody MemberDto memberDto) {
+        return Result.success(memberService.addMember(memberDto));
     }
 
     @PutMapping
