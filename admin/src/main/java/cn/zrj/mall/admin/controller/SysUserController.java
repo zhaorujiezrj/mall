@@ -6,6 +6,7 @@ import cn.zrj.mall.admin.pojo.dto.UserUpdateDto;
 import cn.zrj.mall.admin.pojo.query.UserPageQuery;
 import cn.zrj.mall.admin.service.SysUserService;
 import cn.zrj.mall.admin.pojo.vo.user.UserVo;
+import cn.zrj.mall.common.core.annotation.DuplicateSubmit;
 import cn.zrj.mall.common.core.result.Result;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,6 +34,7 @@ public class SysUserController {
         return Result.success(sysUserService.getAuthInfoByUsername(username));
     }
 
+    @DuplicateSubmit
     @Operation(summary = "分页查询")
     @GetMapping("/pages")
     public Result<IPage<UserVo>> getUserListPage(UserPageQuery query) {

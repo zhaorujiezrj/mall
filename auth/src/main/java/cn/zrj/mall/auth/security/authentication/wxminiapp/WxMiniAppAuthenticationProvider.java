@@ -67,10 +67,10 @@ public class WxMiniAppAuthenticationProvider implements AuthenticationProvider {
         OAuth2ClientAuthenticationToken clientPrincipal = OAuth2AuthenticationProviderUtils.getAuthenticatedClientElseThrowInvalidClient(authentication);
         RegisteredClient registeredClient = clientPrincipal.getRegisteredClient();
         if (registeredClient == null) {
-            throw new OAuth2AuthenticationException(new OAuth2Error(ResultCode.SYSTEM_EXECUTION_ERROR.getCode(), "client is error", null));
+            throw new OAuth2AuthenticationException(new OAuth2Error(ResultCode.SYSTEM_EXECUTION_ERROR.getCode(), "client is error", ERROR_URI));
         }
         if (!registeredClient.getAuthorizationGrantTypes().contains(OAuth2GrantType.WX_APP)) {
-            throw new OAuth2AuthenticationException(new OAuth2Error(ResultCode.SYSTEM_EXECUTION_ERROR.getCode(), "unauthorized_client", null));
+            throw new OAuth2AuthenticationException(new OAuth2Error(ResultCode.SYSTEM_EXECUTION_ERROR.getCode(), "unauthorized_client", ERROR_URI));
         }
 
         String code = wxMiniAppAuthenticationToken.getCode();
@@ -84,7 +84,7 @@ public class WxMiniAppAuthenticationProvider implements AuthenticationProvider {
             log.info("微信小程序用户认证信息【sessionKey = {}，openid = {}， unionId = {}】", sessionKey, openid, unionId);
         } catch (WxErrorException e) {
             log.error("微信小程序用户认证失败，原因：{}", e.getMessage());
-            throw new OAuth2AuthenticationException(new OAuth2Error(ResultCode.SYSTEM_EXECUTION_ERROR.getCode(),"登录失败，原因：" + e.getMessage(), null));
+            throw new OAuth2AuthenticationException(new OAuth2Error(ResultCode.SYSTEM_EXECUTION_ERROR.getCode(),"登录失败，原因：" + e.getMessage(), ERROR_URI));
         }
         UserDetails userDetails = memberUserDetailsService.loadUserByOpenId(openid, mobileAuthCode);
         final Authentication principal = new UsernamePasswordAuthenticationToken(userDetails, null);
@@ -94,7 +94,7 @@ public class WxMiniAppAuthenticationProvider implements AuthenticationProvider {
         if (CollectionUtils.isNotEmpty(wxMiniAppAuthenticationToken.getScopes())) {
             for (String requestedScope : wxMiniAppAuthenticationToken.getScopes()) {
                 if (!registeredClient.getScopes().contains(requestedScope)) {
-                    throw new OAuth2AuthenticationException(new OAuth2Error(ResultCode.PARAM_ERROR.getCode(), OAuth2ErrorCodes.INVALID_SCOPE, null));
+                    throw new OAuth2AuthenticationException(new OAuth2Error(ResultCode.PARAM_ERROR.getCode(), OAuth2ErrorCodes.INVALID_SCOPE, ERROR_URI));
                 }
             }
             authorizedScopes = new LinkedHashSet<>(wxMiniAppAuthenticationToken.getScopes());

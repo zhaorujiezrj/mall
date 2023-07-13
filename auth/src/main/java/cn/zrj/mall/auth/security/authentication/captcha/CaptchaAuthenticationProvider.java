@@ -68,7 +68,7 @@ public class CaptchaAuthenticationProvider implements AuthenticationProvider {
 
         // 验证客户端是否支持授权类型(grant_type=password)
         if (!registeredClient.getAuthorizationGrantTypes().contains(CaptchaAuthenticationToken.CAPTCHA)) {
-            throw new OAuth2AuthenticationException(new OAuth2Error(ResultCode.UNAUTHORIZED.getCode(), OAuth2ErrorCodes.UNAUTHORIZED_CLIENT, null));
+            throw new OAuth2AuthenticationException(new OAuth2Error(ResultCode.UNAUTHORIZED.getCode(), OAuth2ErrorCodes.UNAUTHORIZED_CLIENT, ERROR_URI));
         }
 
         // 证码校验
@@ -79,7 +79,7 @@ public class CaptchaAuthenticationProvider implements AuthenticationProvider {
         if (!Objects.equals("dev", SpringUtil.getActiveProfile())) {
             String cacheCode = redisTemplate.opsForValue().get(RedisConstants.CAPTCHA_CODE + verifyCodeKey);
             if (StringUtils.isBlank(cacheCode) || !Objects.equals(verifyCode, cacheCode)) {
-                throw new OAuth2AuthenticationException(new OAuth2Error(ResultCode.SYSTEM_EXECUTION_ERROR.getCode(), "验证码错误或验证码已失效", null));
+                throw new OAuth2AuthenticationException(new OAuth2Error(ResultCode.SYSTEM_EXECUTION_ERROR.getCode(), "验证码错误或验证码已失效", ERROR_URI));
             }
             //删除校验通过的验证码
             redisTemplate.delete(verifyCodeKey);
@@ -96,7 +96,7 @@ public class CaptchaAuthenticationProvider implements AuthenticationProvider {
         if (CollectionUtils.isNotEmpty(captchaAuthenticationToken.getScopes())) {
             for (String requestedScope : captchaAuthenticationToken.getScopes()) {
                 if (!registeredClient.getScopes().contains(requestedScope)) {
-                    throw new OAuth2AuthenticationException(new OAuth2Error(ResultCode.PARAM_ERROR.getCode(), OAuth2ErrorCodes.INVALID_SCOPE, null));
+                    throw new OAuth2AuthenticationException(new OAuth2Error(ResultCode.PARAM_ERROR.getCode(), OAuth2ErrorCodes.INVALID_SCOPE, ERROR_URI));
                 }
             }
             authorizedScopes = new LinkedHashSet<>(captchaAuthenticationToken.getScopes());

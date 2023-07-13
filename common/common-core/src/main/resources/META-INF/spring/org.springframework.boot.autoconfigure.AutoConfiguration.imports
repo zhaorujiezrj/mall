@@ -2,5 +2,6 @@ cn.zrj.mall.common.core.config.RedisConfig
 cn.zrj.mall.common.core.security.UserContextHolder
 cn.zrj.mall.common.core.exception.GlobalExceptionHandler
 cn.zrj.mall.common.core.util.BusinessNoUtils
+cn.zrj.mall.common.core.aspect.DuplicateSubmitAspect
 
 

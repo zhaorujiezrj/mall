@@ -3,13 +3,16 @@ package cn.zrj.mall.admin.pojo.query;
 import cn.zrj.mall.common.core.base.BasePageQuery;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
+import lombok.*;
 
 /**
  * @author zhaorujie
  * @date 2022/9/8
  */
-@Data
+@EqualsAndHashCode(callSuper = true)
+@Getter
+@Setter
+@ToString(callSuper = true)
 public class UserPageQuery extends BasePageQuery {
 
     @Schema(description = "登录账号")
@@ -23,5 +26,7 @@ public class UserPageQuery extends BasePageQuery {
 
     @Schema(description = "状态（1:正常;0:禁用）")
     private Integer status;
+
+
 
 }

@@ -8,7 +8,6 @@ import lombok.Data;
  * @date 2022/9/8
  */
 @Data
-@Schema
 public class BasePageQuery {
 
     @Schema(description  = "页码", example = "1")

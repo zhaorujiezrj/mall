@@ -72,10 +72,10 @@ public class SmsCodeAuthenticationProvider implements AuthenticationProvider {
         OAuth2ClientAuthenticationToken clientPrincipal = OAuth2AuthenticationProviderUtils.getAuthenticatedClientElseThrowInvalidClient(authentication);
         RegisteredClient registeredClient = clientPrincipal.getRegisteredClient();
         if (registeredClient == null) {
-            throw new OAuth2AuthenticationException(new OAuth2Error(ResultCode.UNAUTHORIZED.getCode(), "client is error", null));
+            throw new OAuth2AuthenticationException(new OAuth2Error(ResultCode.UNAUTHORIZED.getCode(), "client is error", ERROR_URI));
         }
         if (!registeredClient.getAuthorizationGrantTypes().contains(OAuth2GrantType.SMS_CODE)) {
-            throw new OAuth2AuthenticationException(new OAuth2Error(ResultCode.UNAUTHORIZED.getCode(), "unauthorized_client", null));
+            throw new OAuth2AuthenticationException(new OAuth2Error(ResultCode.UNAUTHORIZED.getCode(), "unauthorized_client", ERROR_URI));
         }
         String mobile = smsAuthenticationToken.getMobile();
         String code = smsAuthenticationToken.getCode();
@@ -85,7 +85,7 @@ public class SmsCodeAuthenticationProvider implements AuthenticationProvider {
             // 校验验证码
             String mobileCode = redisTemplate.opsForValue().get(RedisConstants.MOBILE_CODE + mobile);
             if (StringUtils.isBlank(mobileCode) || !Objects.equals(mobileCode, code)) {
-                throw new OAuth2AuthenticationException(new OAuth2Error(ResultCode.SYSTEM_EXECUTION_ERROR.getCode(), "验证码不正确或验证码已过期", null));
+                throw new OAuth2AuthenticationException(new OAuth2Error(ResultCode.SYSTEM_EXECUTION_ERROR.getCode(), "验证码不正确或验证码已过期", ERROR_URI));
             }
             redisTemplate.delete(RedisConstants.MOBILE_CODE + mobile);
         }
@@ -98,7 +98,7 @@ public class SmsCodeAuthenticationProvider implements AuthenticationProvider {
         if (CollectionUtils.isNotEmpty(smsAuthenticationToken.getScopes())) {
             for (String requestedScope : smsAuthenticationToken.getScopes()) {
                 if (!registeredClient.getScopes().contains(requestedScope)) {
-                    throw new OAuth2AuthenticationException(new OAuth2Error(ResultCode.PARAM_ERROR.getCode(), OAuth2ErrorCodes.INVALID_SCOPE, null));
+                    throw new OAuth2AuthenticationException(new OAuth2Error(ResultCode.PARAM_ERROR.getCode(), OAuth2ErrorCodes.INVALID_SCOPE, ERROR_URI));
                 }
             }
             authorizedScopes = new LinkedHashSet<>(smsAuthenticationToken.getScopes());

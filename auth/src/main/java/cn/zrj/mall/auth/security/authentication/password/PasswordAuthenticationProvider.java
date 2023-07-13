@@ -93,7 +93,7 @@ public class PasswordAuthenticationProvider implements AuthenticationProvider {
         if (!CollectionUtils.isEmpty(resourceOwnerPasswordAuthentication.getScopes())) {
             for (String requestedScope : resourceOwnerPasswordAuthentication.getScopes()) {
                 if (!registeredClient.getScopes().contains(requestedScope)) {
-                    throw new OAuth2AuthenticationException(new OAuth2Error(ResultCode.PARAM_ERROR.getCode(), OAuth2ErrorCodes.INVALID_SCOPE, null));
+                    throw new OAuth2AuthenticationException(new OAuth2Error(ResultCode.PARAM_ERROR.getCode(), OAuth2ErrorCodes.INVALID_SCOPE, ERROR_URI));
                 }
             }
             authorizedScopes = new LinkedHashSet<>(resourceOwnerPasswordAuthentication.getScopes());
